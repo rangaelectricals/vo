@@ -1,0 +1,617 @@
+<!-- ══════════════════════════════════════════════════════════
+     RECORD / EDIT PAYMENT  –  Full Page (Premium Layout)
+     ══════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-teal-50/10 bg-premium-pattern animate-fadeIn">
+
+  <!-- ── TOP HEADER BAR ──────────────────────────────────────── -->
+  <div style="background:linear-gradient(135deg,#064e3b 0%,#047857 55%,#10b981 100%)" class="px-6 py-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <button onclick="window._goBackFromPayment()" class="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-all backdrop-blur">
+          <span class="material-icons text-[20px]">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="text-xl font-black text-white tracking-tight leading-tight" id="payment-page-title">Record Payment</h1>
+          <p class="text-emerald-200 text-[10px] font-semibold tracking-widest uppercase mt-0.5">Settlement entry against vendor invoices</p>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-3">
+        <!-- Vendor badge -->
+        <div id="pay-vendor-badge" class="hidden items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2">
+          <div id="pay-vendor-avatar" class="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-white font-black text-xs">V</div>
+          <div>
+            <p id="pay-vendor-badge-name" class="text-white font-bold text-sm leading-tight">Vendor</p>
+            <p id="pay-vendor-badge-out" class="text-emerald-200 text-[9px]">Outstanding: –</p>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+          <span class="material-icons text-white text-xl">payments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT GRID ──────────────────────────────────── -->
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- ══ LEFT: MAIN FORM ══════════════════════════════════════ -->
+    <div class="xl:col-span-2 space-y-5">
+
+      <!-- SECTION 1: Vendor + Invoice Selection -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2 bg-gray-50/60">
+          <span class="material-icons text-emerald-600 text-[18px]">store</span>
+          <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Vendor &amp; Invoice</span>
+        </div>
+        <div class="p-5 space-y-5">
+          <input type="hidden" id="pay-page-id" />
+
+          <!-- Vendor Select -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">store</span> Select Vendor <span class="text-red-400">*</span>
+            </label>
+            <select id="pay-page-vendor" required class="pay-select" onchange="window._payVendorChanged(this.value)">
+              <option value="">-- Select Vendor --</option>
+            </select>
+          </div>
+
+          <!-- Invoice Checklist -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="pay-label mb-0">
+                <span class="material-icons text-[13px]">receipt_long</span> Against Invoices <span class="text-red-400">*</span>
+                <span class="text-[9px] text-gray-400 normal-case font-normal ml-1">(check all that apply)</span>
+              </label>
+              <div class="flex gap-2">
+                <button type="button" onclick="window._selectAllInvoices(true)"
+                  class="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-0.5">
+                  <span class="material-icons text-[11px]">done_all</span> All
+                </button>
+                <button type="button" onclick="window._selectAllInvoices(false)"
+                  class="text-[9px] font-bold text-red-500 hover:underline flex items-center gap-0.5">
+                  <span class="material-icons text-[11px]">remove_done</span> None
+                </button>
+              </div>
+            </div>
+            <!-- Invoice list container -->
+            <div id="pay-page-invoice-container"
+              class="w-full border-2 border-gray-100 rounded-xl bg-gray-50/50 min-h-[120px] max-h-[260px] overflow-y-auto transition-all focus-within:border-emerald-300">
+              <div class="flex flex-col items-center justify-center py-10 gap-2 text-gray-300">
+                <span class="material-icons text-4xl">store</span>
+                <p class="text-[12px] font-semibold">Select a vendor to see invoices</p>
+              </div>
+            </div>
+            <!-- Summary bar -->
+            <div id="pay-inv-summary-bar" class="hidden mt-2 flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-emerald-500 text-[16px]">check_circle</span>
+                <span class="text-[11px] font-bold text-emerald-700" id="pay-inv-count-label">0 invoices selected</span>
+              </div>
+              <span class="text-[12px] font-black text-emerald-700">₹ <span id="pay-page-inv-sum">0</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Payment Details -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2 bg-gray-50/60">
+          <span class="material-icons text-emerald-600 text-[18px]">account_balance_wallet</span>
+          <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Payment Details</span>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+          <!-- Payment Date -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">calendar_today</span> Payment Date <span class="text-red-400">*</span>
+            </label>
+            <input type="date" id="pay-page-date" required class="pay-input" />
+          </div>
+
+          <!-- Amount Paid -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">currency_rupee</span> Amount Paid (₹) <span class="text-red-400">*</span>
+            </label>
+            <div class="relative">
+              <span class="pay-prefix text-emerald-500">₹</span>
+              <input type="number" id="pay-page-amount" min="0.01" step="0.01" placeholder="0.00" required
+                class="pay-input !pl-8 font-black text-emerald-700" oninput="window._checkPartialPayment()" />
+            </div>
+            <!-- Partial payment indicator -->
+            <div id="pay-partial-warning" class="hidden mt-1.5 text-[10px] text-orange-500 font-bold flex items-center gap-1">
+              <span class="material-icons text-[12px]">info</span>
+              Partial payment – balance will remain outstanding
+            </div>
+          </div>
+
+          <!-- Mode of Payment -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">account_balance</span> Mode of Payment
+            </label>
+            <div class="grid grid-cols-3 gap-2" id="pay-mode-group">
+              <button type="button" class="pay-mode-btn active" data-mode="NEFT" onclick="window._setMode('NEFT')">NEFT</button>
+              <button type="button" class="pay-mode-btn" data-mode="IMPS" onclick="window._setMode('IMPS')">IMPS</button>
+              <button type="button" class="pay-mode-btn" data-mode="RTGS" onclick="window._setMode('RTGS')">RTGS</button>
+              <button type="button" class="pay-mode-btn" data-mode="Cheque" onclick="window._setMode('Cheque')">Cheque</button>
+              <button type="button" class="pay-mode-btn" data-mode="Cash" onclick="window._setMode('Cash')">Cash</button>
+              <button type="button" class="pay-mode-btn" data-mode="UPI" onclick="window._setMode('UPI')">UPI</button>
+            </div>
+            <input type="hidden" id="pay-page-mode" value="NEFT" />
+          </div>
+
+          <!-- Ref / UTR -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">confirmation_number</span> Reference / UTR / Cheque No
+            </label>
+            <input type="text" id="pay-page-against" placeholder="e.g. UTR98765432 / CHQ001"
+              class="pay-input" />
+            <p class="text-[9px] text-gray-400 mt-1">Bank transaction reference number</p>
+          </div>
+
+          <!-- Bank Name -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">business</span> Bank / Source
+            </label>
+            <input type="text" id="pay-page-bank" placeholder="e.g. HDFC Bank / Petty Cash"
+              class="pay-input" />
+          </div>
+
+          <!-- Payment Voucher No -->
+          <div>
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">receipt</span> Payment Voucher No
+            </label>
+            <input type="text" id="pay-page-voucher" placeholder="e.g. PV-2024-045"
+              class="pay-input" />
+          </div>
+
+          <!-- Remarks (full width) -->
+          <div class="sm:col-span-2">
+            <label class="pay-label">
+              <span class="material-icons text-[13px]">notes</span> Internal Remarks
+              <span class="text-[9px] text-gray-300 normal-case font-normal ml-1">(optional)</span>
+            </label>
+            <textarea id="pay-page-remarks" rows="2" placeholder="Any additional notes about this payment..."
+              class="w-full border-2 border-gray-100 hover:border-emerald-200 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 rounded-xl px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 resize-none placeholder:text-gray-300"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+          <span class="material-icons text-red-300 text-[12px]">info</span>
+          Select at least one invoice before saving
+        </p>
+        <div class="flex gap-3">
+          <button type="button" onclick="window._goBackFromPayment()"
+            class="px-6 py-2.5 text-sm font-bold text-gray-500 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:text-gray-700 shadow-sm transition-all duration-200 flex items-center gap-2">
+            <span class="material-icons text-[16px]">close</span> Cancel
+          </button>
+          <button type="button" onclick="window._submitPaymentPage()"
+            id="pay-page-submit-btn"
+            class="px-7 py-2.5 text-sm font-bold text-white rounded-xl flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-xl active:scale-95"
+            style="background:linear-gradient(135deg,#047857,#064e3b)">
+            <span class="material-icons text-[16px]">save</span>
+            <span id="pay-page-btn-label">Save Payment</span>
+          </button>
+        </div>
+      </div>
+    </div><!-- /LEFT -->
+
+    <!-- ══ RIGHT PANEL ══════════════════════════════════════════ -->
+    <div class="space-y-5">
+
+      <!-- Payment Summary Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-20">
+        <div class="px-5 py-3 border-b border-gray-100" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5)">
+          <div class="flex items-center gap-2">
+            <span class="material-icons text-emerald-600 text-[18px]">auto_awesome</span>
+            <span class="text-[11px] font-black text-emerald-700 uppercase tracking-widest">Payment Summary</span>
+          </div>
+        </div>
+        <div class="p-5 space-y-3">
+          <div class="pay-sum-row">
+            <span class="pay-sum-label">Selected Invoices</span>
+            <span class="pay-sum-val" id="ps-inv-count">0</span>
+          </div>
+          <div class="pay-sum-row">
+            <span class="pay-sum-label">Total Outstanding</span>
+            <span class="pay-sum-val text-red-600" id="ps-inv-total">₹ 0</span>
+          </div>
+          <div class="pay-sum-row">
+            <span class="pay-sum-label">Paying Now</span>
+            <span class="pay-sum-val text-emerald-600" id="ps-paying">₹ 0</span>
+          </div>
+          <hr class="border-gray-100"/>
+          <div class="pay-sum-row bg-gray-50 rounded-xl px-3 py-2 -mx-1">
+            <span class="text-[11px] font-black text-gray-600 uppercase">Remaining</span>
+            <span class="text-base font-black" id="ps-remaining" style="color:#dc2626">₹ 0</span>
+          </div>
+        </div>
+
+        <!-- Mode badge -->
+        <div class="mx-5 mb-5 rounded-xl p-3 text-center" id="ps-mode-card" style="background:linear-gradient(135deg,#047857,#064e3b)">
+          <p class="text-emerald-200 text-[9px] font-bold uppercase tracking-widest mb-1">Mode</p>
+          <p class="text-white font-black text-lg" id="ps-mode-display">NEFT</p>
+        </div>
+      </div>
+
+      <!-- Vendor Outstanding Breakdown -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="pay-vendor-card" style="display:none">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2 bg-gray-50/60">
+          <span class="material-icons text-indigo-500 text-[18px]">groups</span>
+          <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Vendor Summary</span>
+        </div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center gap-3 mb-3">
+            <div id="pv-avatar" class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-base">V</div>
+            <div>
+              <p id="pv-name" class="font-black text-gray-800 text-sm">–</p>
+              <p id="pv-gst" class="text-[10px] text-gray-500">GST: –</p>
+            </div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between"><span class="text-gray-500 font-semibold">Total Invoiced</span><span class="font-black" id="pv-total-inv">₹ 0</span></div>
+            <div class="flex justify-between"><span class="text-gray-500 font-semibold">Total Paid</span><span class="font-black text-emerald-600" id="pv-total-paid">₹ 0</span></div>
+            <div class="flex justify-between border-t border-gray-100 pt-2"><span class="text-gray-700 font-black">Outstanding</span><span class="font-black text-red-600" id="pv-outstanding">₹ 0</span></div>
+          </div>
+          <!-- Phone + Email -->
+          <hr class="border-gray-100"/>
+          <p class="text-[10px] text-gray-500"><span class="font-bold">Phone:</span> <span id="pv-phone">–</span></p>
+          <p class="text-[10px] text-gray-500"><span class="font-bold">Email:</span> <span id="pv-email">–</span></p>
+        </div>
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="pay-recent-card" style="display:none">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2 bg-gray-50/60">
+          <span class="material-icons text-emerald-500 text-[18px]">history</span>
+          <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Recent Payments</span>
+        </div>
+        <div id="pay-recent-list" class="divide-y divide-gray-50 max-h-52 overflow-y-auto">
+          <p class="text-center text-xs text-gray-400 py-4">No payments yet</p>
+        </div>
+      </div>
+    </div><!-- /RIGHT -->
+  </div><!-- /GRID -->
+</div>
+
+<style>
+  .pay-label   { display:flex;align-items:center;gap:5px;font-size:10px;font-weight:900;color:#059669;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px; }
+  .pay-input   { width:100%;border:2px solid #f0fdf4;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;color:#1e293b;background:#f8fafc;outline:none;transition:all .2s; }
+  .pay-input:hover { border-color:#a7f3d0; }
+  .pay-input:focus { border-color:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.08);background:#fff; }
+  .pay-select  { width:100%;border:2px solid #f0fdf4;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all .2s; }
+  .pay-select:hover { border-color:#a7f3d0; }
+  .pay-select:focus { border-color:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.08);background:#fff; }
+  .pay-prefix  { position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:900;font-size:14px;pointer-events:none; }
+  .pay-mode-btn { padding:8px 4px;border-radius:10px;font-size:11px;font-weight:800;background:#f1f5f9;color:#64748b;border:2px solid #e2e8f0;transition:all .15s;cursor:pointer;text-align:center; }
+  .pay-mode-btn:hover { background:#d1fae5;color:#047857;border-color:#6ee7b7; }
+  .pay-mode-btn.active { background:#047857;color:#fff;border-color:#047857; }
+  .pay-sum-row { display:flex;justify-content:space-between;align-items:center; }
+  .pay-sum-label { font-size:11px;color:#6b7280;font-weight:600; }
+  .pay-sum-val   { font-size:12px;font-weight:900;color:#111827; }
+</style>
+
+<script>
+(function() {
+  const $ = id => document.getElementById(id);
+
+  /* ── helpers ───────────────────────────────────────────────── */
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  let _selectedVendor = '';
+  let _currentMode = 'NEFT';
+
+  /* ── Populate vendors ──────────────────────────────────────── */
+  function populateVendors() {
+    const sel = $('pay-page-vendor');
+    if (!sel) return;
+    if (sel.tomselect) sel.tomselect.destroy();
+    sel.innerHTML = '<option value="">-- Select Vendor --</option>' +
+      (window.vendorList || []).map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+    if (window.TomSelect) new TomSelect(sel, { plugins: ['clear_button'], allowEmptyOption: true, create: false, placeholder: '-- Select Vendor --', maxOptions: null });
+  }
+
+  /* ── Mode selection ────────────────────────────────────────── */
+  window._setMode = function(mode) {
+    _currentMode = mode;
+    $('pay-page-mode').value = mode;
+    $('ps-mode-display').textContent = mode;
+    document.querySelectorAll('.pay-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+  };
+
+  /* ── Select all / none invoices ────────────────────────────── */
+  window._selectAllInvoices = function(check) {
+    document.querySelectorAll('.pay-inv-cb').forEach(cb => {
+      cb.checked = check;
+    });
+    window._payPageUpdateSum();
+  };
+
+  /* ── Vendor changed ────────────────────────────────────────── */
+  window._payVendorChanged = function(vendorName) {
+    _selectedVendor = vendorName;
+    const badge    = $('pay-vendor-badge');
+    const vCard    = $('pay-vendor-card');
+    const rCard    = $('pay-recent-card');
+    const recentList = $('pay-recent-list');
+
+    if (!vendorName) {
+      if (badge)  badge.classList.remove('flex');
+      if (badge)  badge.classList.add('hidden');
+      if (vCard)  vCard.style.display = 'none';
+      if (rCard)  rCard.style.display = 'none';
+      $('pay-page-invoice-container').innerHTML = `
+        <div class="flex flex-col items-center justify-center py-10 gap-2 text-gray-300">
+          <span class="material-icons text-4xl">store</span>
+          <p class="text-[12px] font-semibold">Select a vendor to see invoices</p>
+        </div>`;
+      $('pay-inv-summary-bar').classList.add('hidden');
+      return;
+    }
+
+    const vendor = (window.vendorList || []).find(v => v.name === vendorName);
+
+    // Badge
+    if (badge) {
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+      $('pay-vendor-badge-name').textContent = vendorName;
+    }
+
+    // Vendor card
+    if (vendor && vCard) {
+      vCard.style.display = '';
+      $('pv-avatar').textContent = vendor.name.charAt(0);
+      $('pv-name').textContent   = vendor.name;
+      $('pv-gst').textContent    = `GST: ${vendor.gst || '–'}`;
+      $('pv-phone').textContent  = vendor.phone || '–';
+      $('pv-email').textContent  = vendor.email || '–';
+      const totalInv  = (window.invoiceList || []).filter(i => i.vendor === vendorName).reduce((s,i)=>s+i.total, 0);
+      const totalPaid = (window.paymentList || []).filter(p => p.vendor === vendorName).reduce((s,p)=>s+p.amount, 0);
+      const out       = totalInv - totalPaid;
+      $('pv-total-inv').textContent  = '₹ ' + totalInv.toLocaleString();
+      $('pv-total-paid').textContent = '₹ ' + totalPaid.toLocaleString();
+      $('pv-outstanding').textContent= '₹ ' + out.toLocaleString();
+      $('pay-vendor-badge-out').textContent = `Outstanding: ₹${out.toLocaleString()}`;
+    }
+
+    // Recent payments
+    const recents = (window.paymentList || []).filter(p => p.vendor === vendorName).slice(-5).reverse();
+    if (rCard) rCard.style.display = recents.length ? '' : 'none';
+    if (recentList) {
+      recentList.innerHTML = recents.length
+        ? recents.map(p => `<div class="px-4 py-2.5 hover:bg-gray-50 transition-colors">
+            <div class="flex justify-between items-center">
+              <span class="text-[11px] font-bold text-emerald-600">₹ ${p.amount.toLocaleString()}</span>
+              <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${p.mode || '–'}</span>
+            </div>
+            <p class="text-[9px] text-gray-400 mt-0.5">${window.formatDate ? window.formatDate(p.date) : p.date} · ${p.invoiceNumber}</p>
+          </div>`).join('')
+        : '<p class="text-center text-xs text-gray-400 py-4">No payments yet</p>';
+    }
+
+    updateInvoiceList(vendorName, '');
+  };
+
+  /* ── Build invoice checklist ───────────────────────────────── */
+  function updateInvoiceList(vendor, checkedStr) {
+    const container = $('pay-page-invoice-container');
+    if (!container) return;
+
+    const editingId   = window._editPaymentId;
+    const payments    = window.paymentList || [];
+    const checkedList = (checkedStr || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    let html = '', count = 0;
+    const invs = (window.invoiceList || []).filter(i => i.vendor === vendor);
+
+    invs.forEach(inv => {
+      let rawPaid = window.getPaidAmountForInvoice(inv.number);
+      if (editingId) {
+        // Exclude the currently editing payment from the pre-allocated sum so it can be re-allocated correctly in the UI builder.
+        const editingPayment = payments.find(p => p.id === editingId);
+        if (editingPayment && String(editingPayment.invoiceNumber||'').includes(inv.number)) {
+          // Approximate the deduction if they were editing a multi-invoice payment (rare, but mathematically robust)
+          // For simplicity in edit view, we'll just subtract the editingPayment's total amount from the global ledger sum.
+          const allocRef = window.getPaymentRefsForInvoice(inv.number).find(r => r.id === editingId);
+          if (allocRef) rawPaid -= allocRef.allocated;
+        }
+      }
+
+      const paidOut   = Math.min(inv.total, rawPaid);
+      const balance   = Math.max(0, inv.total - rawPaid);
+      const isChecked = checkedList.includes(inv.number);
+      const ageing    = Math.floor((new Date() - new Date(inv.date)) / 86400000);
+
+      if (balance > 0 || isChecked) {
+        count++;
+        const ageColor = ageing <= 30 ? '#059669' : ageing <= 60 ? '#d97706' : '#dc2626';
+        html += `
+          <label class="flex items-center gap-3 px-4 py-3 hover:bg-emerald-50/50 border-b border-gray-50 last:border-0 cursor-pointer transition-colors group">
+            <input type="checkbox" class="pay-inv-cb w-4 h-4 rounded accent-emerald-500 flex-shrink-0"
+              value="${inv.number}" data-balance="${balance}" data-total="${inv.total}"
+              ${isChecked ? 'checked' : ''} onchange="window._payPageUpdateSum()">
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[12px] font-bold text-gray-800">${inv.number}</span>
+                  ${balance <= 0 ? '<span class="ml-2 text-[9px] font-bold text-gray-400 px-1.5 py-0.5 border border-gray-200 rounded bg-gray-50">Settled</span>' : `<span class="ml-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style="background:${ageColor}22;color:${ageColor}">${ageing}d</span>`}
+                </div>
+                <span class="text-[12px] font-black text-red-600 ml-2 flex-shrink-0">₹ ${balance.toLocaleString()}</span>
+              </div>
+              <p class="text-[9px] text-gray-400 mt-0.5">
+                Inv Total: ₹${inv.total.toLocaleString()} 
+                · Paid: ₹${paidOut.toLocaleString()}
+                · Date: ${window.formatDate ? window.formatDate(inv.date) : inv.date}
+              </p>
+            </div>
+          </label>`;
+      }
+    });
+
+    if (!count) {
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-10 gap-2 text-gray-300">
+          <span class="material-icons text-4xl">check_circle</span>
+          <p class="text-[12px] font-semibold text-emerald-400">All invoices settled!</p>
+        </div>`;
+      $('pay-inv-summary-bar').classList.add('hidden');
+    } else {
+      container.innerHTML = html;
+      $('pay-inv-summary-bar').classList.remove('hidden');
+      window._payPageUpdateSum();
+    }
+  }
+
+  /* ── Sum selected invoices ─────────────────────────────────── */
+  window._payPageUpdateSum = function() {
+    let total = 0, count = 0;
+    document.querySelectorAll('.pay-inv-cb:checked').forEach(cb => {
+      total += parseFloat(cb.getAttribute('data-balance')) || 0;
+      count++;
+    });
+    const allTotal = (() => {
+      let t = 0;
+      document.querySelectorAll('.pay-inv-cb:checked').forEach(cb => { t += parseFloat(cb.getAttribute('data-total')) || 0; });
+      return t;
+    })();
+
+    // Summary bar
+    const sumEl = $('pay-page-inv-sum');
+    if (sumEl) sumEl.textContent = total.toLocaleString();
+    const countLabel = $('pay-inv-count-label');
+    if (countLabel) countLabel.textContent = `${count} invoice${count!==1?'s':''} selected`;
+
+    // Auto-fill amount only if not already typed
+    const amtInput = $('pay-page-amount');
+    if (amtInput && (!amtInput.value || parseFloat(amtInput.value) === 0) && total > 0) {
+      amtInput.value = total.toFixed(2);
+    }
+
+    // Right panel
+    if ($('ps-inv-count'))  $('ps-inv-count').textContent  = count;
+    if ($('ps-inv-total'))  $('ps-inv-total').textContent  = '₹ ' + total.toLocaleString();
+    updatePaymentSummary();
+  };
+
+  window._checkPartialPayment = function() {
+    updatePaymentSummary();
+  };
+
+  function updatePaymentSummary() {
+    const paying = parseFloat($('pay-page-amount').value) || 0;
+    let outstanding = 0;
+    document.querySelectorAll('.pay-inv-cb:checked').forEach(cb => {
+      outstanding += parseFloat(cb.getAttribute('data-balance')) || 0;
+    });
+    const remaining = outstanding - paying;
+
+    if ($('ps-paying'))    $('ps-paying').textContent    = '₹ ' + paying.toLocaleString();
+    if ($('ps-remaining')) {
+      $('ps-remaining').textContent = '₹ ' + Math.max(0, remaining).toLocaleString();
+      $('ps-remaining').style.color = remaining > 0 ? '#dc2626' : '#059669';
+    }
+
+    // Partial warning
+    const warn = $('pay-partial-warning');
+    if (warn) warn.classList.toggle('hidden', remaining <= 0 || paying === 0);
+  }
+
+  /* ── Back nav ──────────────────────────────────────────────── */
+  window._goBackFromPayment = function() {
+    const p = window._paymentReturnPage || 'payments';
+    window._paymentReturnPage = null;
+    window.location.hash = p;
+  };
+
+  /* ── Submit ────────────────────────────────────────────────── */
+  window._submitPaymentPage = function() {
+    const id      = $('pay-page-id').value;
+    const date    = $('pay-page-date').value;
+    const vendor  = $('pay-page-vendor').value.trim();
+
+    const selectedInvs  = Array.from(document.querySelectorAll('.pay-inv-cb:checked')).map(cb => cb.value);
+    const invoiceNumber = selectedInvs.join(', ');
+
+    const amount  = parseFloat($('pay-page-amount').value);
+    const mode    = $('pay-page-mode').value;
+    const against = $('pay-page-against').value.trim();
+    const bank    = ($('pay-page-bank')    || {value:''}).value.trim();
+    const voucher = ($('pay-page-voucher') || {value:''}).value.trim();
+    const remarks = $('pay-page-remarks').value.trim();
+
+    if (!date || !vendor || !invoiceNumber || !amount) {
+      window.showToaster('Please select a vendor, at least one invoice, and enter the amount.', 'error');
+      return;
+    }
+
+    const payload = { date, vendor, invoiceNumber, amount, mode, against, bank, voucher, remarks };
+
+    if (id) {
+      payload.id = Number(id);
+      const idx = (window.paymentList || []).findIndex(p => p.id == id);
+      if (idx > -1) window.paymentList[idx] = payload;
+      window.saveToDatabase('editPayment', payload);
+      window.showToaster('Payment updated successfully');
+    } else {
+      payload.id = Date.now();
+      (window.paymentList = window.paymentList || []).push(payload);
+      window.saveToDatabase('addPayment', payload);
+      window.showToaster('Payment recorded successfully');
+    }
+
+    window._editPaymentId        = null;
+    window._contextPaymentVendor = null;
+    window._lockPaymentVendor    = false;
+    const ret = window._paymentReturnPage || 'payments';
+    window._paymentReturnPage = null;
+    window.location.hash = ret;
+  };
+
+  /* ── INIT ──────────────────────────────────────────────────── */
+  populateVendors();
+  $('pay-page-date').value = todayISO();
+
+  const editId = window._editPaymentId;
+  if (editId) {
+    const p = (window.paymentList || []).find(p => p.id === editId);
+    if (p) {
+      $('payment-page-title').textContent = 'Edit Payment';
+      $('pay-page-btn-label').textContent = 'Update Payment';
+      $('pay-page-id').value              = p.id;
+      $('pay-page-date').value            = window.toIsoDate(p.date);
+      $('pay-page-vendor').value          = p.vendor;
+      if (window._lockPaymentVendor) $('pay-page-vendor').disabled = true;
+      window._payVendorChanged(p.vendor);
+      updateInvoiceList(p.vendor, p.invoiceNumber);
+      $('pay-page-amount').value  = p.amount;
+      window._setMode(p.mode || 'NEFT');
+      $('pay-page-against').value = p.against || '';
+      ($('pay-page-bank')    || {}).value = p.bank    || '';
+      ($('pay-page-voucher') || {}).value = p.voucher || '';
+      $('pay-page-remarks').value = p.remarks || '';
+      window._payPageUpdateSum();
+    }
+  } else if (window._contextPaymentVendor) {
+    $('pay-page-vendor').value    = window._contextPaymentVendor;
+    $('pay-page-vendor').disabled = true;
+    window._payVendorChanged(window._contextPaymentVendor);
+  }
+
+  window._checkPartialPayment();
+})();
+</script>

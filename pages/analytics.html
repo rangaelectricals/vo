@@ -1,0 +1,221 @@
+<!-- ══════════════════════════ ANALYTICS & INSIGHTS ════ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30 bg-premium-pattern animate-fadeIn p-5 space-y-5">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-gray-800 tracking-tight">Analytics &amp; Insights</h1>
+      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Deep operational intelligence · cashflow velocity · risk mapping</p>
+    </div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl text-sm font-bold text-indigo-600">
+        <span class="material-icons text-[16px]">auto_awesome</span> Live Data Engine
+      </div>
+      <button class="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition" onclick="if(typeof window.analyticsPageInit==='function') window.analyticsPageInit()">
+        <span class="material-icons text-[16px]">refresh</span> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ── KPI ROW 1 ───────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="anlyt-kpi border-l-4 border-blue-500">
+      <p class="anlyt-kpi-label">Global Invoiced</p>
+      <h3 class="anlyt-kpi-val text-gray-800" id="analytics-global-inv">₹0</h3>
+    </div>
+    <div class="anlyt-kpi border-l-4 border-emerald-500">
+      <p class="anlyt-kpi-label">Total Paid</p>
+      <h3 class="anlyt-kpi-val text-emerald-600" id="analytics-global-paid">₹0</h3>
+    </div>
+    <div class="anlyt-kpi border-l-4 border-orange-400">
+      <p class="anlyt-kpi-label">Outstanding</p>
+      <h3 class="anlyt-kpi-val text-orange-600" id="analytics-global-out">₹0</h3>
+    </div>
+    <div class="anlyt-kpi border-l-4 border-red-500 bg-red-50/50">
+      <p class="anlyt-kpi-label text-red-400">Critical Overdue</p>
+      <h3 class="anlyt-kpi-val text-red-600" id="analytics-global-ovr">₹0</h3>
+    </div>
+  </div>
+
+  <!-- ── KPI ROW 2: Behaviour Metrics ─────────────────────────── -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="anlyt-kpi flex items-center justify-between">
+      <div>
+        <p class="anlyt-kpi-label">Avg. Days to Pay</p>
+        <h3 class="anlyt-kpi-val text-gray-800 mt-1" id="analytics-avg-days">0 Days</h3>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+        <span class="material-icons">update</span>
+      </div>
+    </div>
+    <div class="anlyt-kpi flex items-center justify-between">
+      <div>
+        <p class="anlyt-kpi-label">Payment Ratio</p>
+        <h3 class="anlyt-kpi-val text-emerald-600 mt-1" id="analytics-payment-ratio">0%</h3>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+        <span class="material-icons">paid</span>
+      </div>
+    </div>
+    <div class="anlyt-kpi flex items-center justify-between">
+      <div>
+        <p class="anlyt-kpi-label">Vendors w/ Outstanding</p>
+        <h3 class="anlyt-kpi-val text-indigo-600 mt-1" id="analytics-active-vendors">0</h3>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
+        <span class="material-icons">groups</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AGEING BREAKDOWN STRIP ─────────────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Outstanding Ageing Breakdown</p>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="text-center bg-emerald-50 rounded-xl p-4">
+        <p class="text-[10px] font-black text-emerald-400 uppercase tracking-wider">0–30 Days</p>
+        <p class="text-2xl font-black text-emerald-600 mt-1" id="age-30-val">₹0</p>
+        <div class="mt-2 h-1.5 bg-emerald-200 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full anlyt-age-bar" id="age-30-bar" style="width:0%"></div></div>
+      </div>
+      <div class="text-center bg-orange-50 rounded-xl p-4">
+        <p class="text-[10px] font-black text-orange-400 uppercase tracking-wider">31–60 Days</p>
+        <p class="text-2xl font-black text-orange-600 mt-1" id="age-60-val">₹0</p>
+        <div class="mt-2 h-1.5 bg-orange-200 rounded-full overflow-hidden"><div class="h-full bg-orange-500 rounded-full anlyt-age-bar" id="age-60-bar" style="width:0%"></div></div>
+      </div>
+      <div class="text-center bg-red-50 rounded-xl p-4">
+        <p class="text-[10px] font-black text-red-400 uppercase tracking-wider">60+ Days Critical</p>
+        <p class="text-2xl font-black text-red-600 mt-1" id="age-90-val">₹0</p>
+        <div class="mt-2 h-1.5 bg-red-200 rounded-full overflow-hidden"><div class="h-full bg-red-500 rounded-full anlyt-age-bar" id="age-90-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CHARTS ─────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+    <!-- Ageing Pie -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col min-h-[380px]">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+          <span class="material-icons text-[18px]">pie_chart</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-gray-800">Liability Ageing Matrix</h3>
+          <p class="text-[10px] text-gray-500">Breakdown of outstanding balance by age bucket</p>
+        </div>
+      </div>
+      <div class="flex-1 min-h-[260px] relative flex items-center justify-center">
+        <canvas id="ageingMatrixChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Velocity Line Chart -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col min-h-[380px]">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+          <span class="material-icons text-[18px]">timeline</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-gray-800">Payment Velocity (6 Months)</h3>
+          <p class="text-[10px] text-gray-500">Historical outflow vs liabilities incurred</p>
+        </div>
+      </div>
+      <div class="flex-1 min-h-[260px] relative">
+        <canvas id="velocityLineChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECONDARY CHARTS ────────────────────────────────────── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- Payment Mode Doughnut -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col min-h-[300px]">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+          <span class="material-icons text-[18px]">account_balance</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-gray-800">Payment Modes</h3>
+          <p class="text-[10px] text-gray-500">Distribution by transaction type</p>
+        </div>
+      </div>
+      <div class="flex-1 min-h-[200px] relative flex items-center justify-center">
+        <canvas id="paymentModeChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Critical Invoices Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col min-h-[300px] lg:col-span-2">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+          <span class="material-icons text-[18px]">warning</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-gray-800">Critical Singular Liabilities</h3>
+          <p class="text-[10px] text-gray-500">Top 5 largest individual unpaid invoices</p>
+        </div>
+        <button class="ml-auto text-[10px] font-bold text-indigo-600 hover:underline" onclick="window.location.hash='report'">View all →</button>
+      </div>
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+              <th class="py-2 px-3">INVOICE</th>
+              <th class="py-2 px-3">VENDOR</th>
+              <th class="py-2 px-3 text-right">TOTAL</th>
+              <th class="py-2 px-3 text-center">AGEING</th>
+              <th class="py-2 px-3 text-right text-red-500">BALANCE</th>
+              <th class="py-2 px-3 text-center">ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="critical-invoices-body" class="text-sm divide-y divide-gray-50"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── VENDOR RISK CONCENTRATION ──────────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+          <span class="material-icons text-[18px]">security</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-gray-800">Portfolio Concentration Risk</h3>
+          <p class="text-[10px] text-gray-500">Top 5 highest-exposure vendors with active liabilities</p>
+        </div>
+      </div>
+      <button class="text-[11px] font-bold text-indigo-600 border border-indigo-100 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition" onclick="window.location.hash='report'">
+        Full Ledger →
+      </button>
+    </div>
+    <div class="overflow-x-auto hidden md:block">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+            <th class="py-3 px-4 w-12 text-center">RANK</th>
+            <th class="py-3 px-4">VENDOR</th>
+            <th class="py-3 px-4 text-center">TOTAL INVOICED</th>
+            <th class="py-3 px-4 text-center">TOTAL PAID</th>
+            <th class="py-3 px-4 w-1/3">LIABILITY BAR</th>
+            <th class="py-3 px-4 text-right">EXPOSURE</th>
+          </tr>
+        </thead>
+        <tbody id="risk-concentration-body" class="text-sm divide-y divide-gray-100"></tbody>
+      </table>
+    </div>
+    <!-- Mobile Card View -->
+    <div id="analytics-card-grid" class="grid grid-cols-1 gap-4 mt-4 md:hidden"></div>
+  </div>
+
+</div>
+
+<style>
+  .anlyt-kpi { background:white;border-radius:14px;padding:16px 20px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .anlyt-kpi-label { font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em; }
+  .anlyt-kpi-val { font-size:22px;font-weight:900;line-height:1.1; }
+</style>

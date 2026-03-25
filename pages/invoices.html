@@ -1,0 +1,387 @@
+<!-- ══════════════════════════════════════════════ INVOICES LIST PAGE ══ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/20 bg-premium-pattern animate-fadeIn p-5">
+
+  <!-- ── PAGE HEADER ────────────────────────────────────────────── -->
+  <div class="max-w-full mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-gray-800 tracking-tight">Invoice Register</h1>
+      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Complete list of all purchase invoices</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Filter by vendor -->
+      <select id="inv-filter-vendor" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <option value="">All Vendors</option>
+      </select>
+      <!-- Filter by status -->
+      <select id="inv-filter-status" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="partial">Partial</option>
+        <option value="paid">Fully Paid</option>
+      </select>
+      <!-- Search -->
+      <div class="relative">
+        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">search</span>
+        <input type="text" id="invoice-search" placeholder="Search..." class="pl-8 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm w-52 transition-all" />
+      </div>
+      <!-- Export -->
+      <button onclick="window._exportInvoicesCSV()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 shadow-sm transition">
+        <span class="material-icons text-[16px]">download</span> Export
+      </button>
+      <!-- Add -->
+      <button onclick="window._editInvoiceId=null;window._contextVendorName=null;window._lockInvoiceVendor=false;window._invoiceReturnPage='invoices';window.location.hash='add-invoice'"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+        style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">
+        <span class="material-icons text-[18px]">add</span> Add Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS STRIP ─────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+    <div class="stat-card col-span-1">
+      <span class="stat-label">Total Invoices</span>
+      <span class="stat-val text-gray-800" id="inv-stat-count">--</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Total Value</span>
+      <span class="stat-val text-blue-700" id="inv-stat-total">--</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Total Paid</span>
+      <span class="stat-val text-emerald-600" id="inv-stat-paid">--</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Outstanding</span>
+      <span class="stat-val text-red-600" id="inv-stat-out">--</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Overdue (&gt;60d)</span>
+      <span class="stat-val text-orange-600" id="inv-stat-overdue">--</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Active Vendors</span>
+      <span class="stat-val text-indigo-600" id="inv-stat-vendors">--</span>
+    </div>
+  </div>
+
+  <!-- ── TABLE CARD ──────────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Table header bar -->
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-blue-600 text-[18px]">receipt_long</span>
+        <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Invoices</span>
+        <span class="bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full" id="inv-count-badge">0</span>
+      </div>
+      <!-- Sort -->
+      <select id="inv-sort" class="text-[11px] border border-gray-200 rounded-lg px-2 py-1 font-bold bg-white text-gray-600 outline-none cursor-pointer">
+        <option value="date-desc">Newest First</option>
+        <option value="date-asc">Oldest First</option>
+        <option value="total-desc">Amount ↓</option>
+        <option value="total-asc">Amount ↑</option>
+        <option value="balance-desc">Balance ↓</option>
+      </select>
+    </div>
+
+    <!-- Responsive wrapper -->
+    <div class="overflow-x-auto hidden md:block">
+      <table class="w-full text-left border-collapse min-w-[1000px]">
+        <thead>
+          <tr class="bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-200">
+            <th class="py-3 px-4 w-8">#</th>
+            <th class="py-3 px-4">DATE</th>
+            <th class="py-3 px-4">INV. NO</th>
+            <th class="py-3 px-4">VENDOR</th>
+            <th class="py-3 px-4">CATEGORY</th>
+            <th class="py-3 px-4 text-right">BASIC</th>
+            <th class="py-3 px-4 text-right">GST</th>
+            <th class="py-3 px-4 text-right">TOTAL</th>
+            <th class="py-3 px-4 text-center">AGEING</th>
+            <th class="py-3 px-4 text-center">STATUS</th>
+            <th class="py-3 px-4 text-right">BALANCE</th>
+            <th class="py-3 px-4 text-center w-28">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="invoice-table-body" class="text-sm divide-y divide-gray-50">
+          <tr><td colspan="12" class="py-10 text-center text-gray-400">Loading invoices...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Mobile Card View -->
+    <div id="inv-card-grid" class="grid grid-cols-1 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
+
+    <!-- Footer bar -->
+    <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/40 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] text-gray-500 font-semibold" id="inv-table-footer">0 records</span>
+        <select id="inv-page-size" class="text-[11px] border border-gray-200 rounded px-2 py-1 outline-none cursor-pointer">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="-1">All</option>
+        </select>
+      </div>
+      <div id="inv-pagination" class="flex items-center"></div>
+      <div class="flex items-center gap-2 text-[11px] text-gray-500 font-semibold hidden lg:flex">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Paid
+        <span class="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block ml-2"></span> Partial
+        <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block ml-2"></span> Pending
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .stat-card { background:white;border-radius:14px;padding:14px 16px;border:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:4px; }
+  .stat-label { font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em; }
+  .stat-val   { font-size:18px;font-weight:900;line-height:1.1; }
+</style>
+
+<script>
+(function() {
+  /* ── populate vendor filter ──────────────────────────────────── */
+  function populateVendorFilter() {
+    const sel = document.getElementById('inv-filter-vendor');
+    if (!sel) return;
+    if (sel.tomselect) sel.tomselect.destroy();
+    const vendors = [...new Set((window.invoiceList||[]).map(i=>i.vendor))].sort();
+    sel.innerHTML = '<option value="">All Vendors</option>' +
+      vendors.map(v => `<option value="${v}">${v}</option>`).join('');
+    if (window.TomSelect) new TomSelect(sel, { plugins: ['clear_button'], allowEmptyOption: true, create: false, placeholder: 'All Vendors', maxOptions: null });
+  }
+
+  /* ── main render ─────────────────────────────────────────────── */
+  function renderInvoices() {
+    const q       = (document.getElementById('invoice-search')?.value || '').toLowerCase();
+    const vendor  = document.getElementById('inv-filter-vendor')?.value || '';
+    const status  = document.getElementById('inv-filter-status')?.value || '';
+    const sortBy  = document.getElementById('inv-sort')?.value || 'date-desc';
+    const tbody   = document.getElementById('invoice-table-body');
+    if (!tbody) return;
+
+    const payments = window.paymentList || [];
+    const today    = new Date();
+
+    let list = (window.invoiceList || []).map(inv => {
+      const rawPaid = window.getPaidAmountForInvoice(inv.number);
+      const paidAmt = Math.min(inv.total, rawPaid);
+      const balance  = Math.max(0, parseFloat((inv.total - rawPaid).toFixed(2)));
+      const ageing   = Math.floor((today - new Date(inv.date)) / 86400000);
+      const paidPct  = inv.total > 0 ? Math.min(100, Math.round((paidAmt / inv.total) * 100)) : 0;
+      const st       = balance <= 0 ? 'paid' : paidAmt > 0 ? 'partial' : 'pending';
+      return { ...inv, paidAmt, balance, ageing, paidPct, st };
+    });
+
+    // Filter
+    if (q) list = list.filter(i =>
+      (i.number||'').toLowerCase().includes(q) ||
+      (i.vendor||'').toLowerCase().includes(q) ||
+      (i.category||'').toLowerCase().includes(q) ||
+      (i.remarks||'').toLowerCase().includes(q) ||
+      (i.po||'').toLowerCase().includes(q)
+    );
+    if (vendor) list = list.filter(i => i.vendor === vendor);
+    if (status) list = list.filter(i => i.st     === status);
+
+    // Sort
+    list.sort((a, b) => {
+      if (sortBy === 'date-desc')    return new Date(b.date)  - new Date(a.date);
+      if (sortBy === 'date-asc')     return new Date(a.date)  - new Date(b.date);
+      if (sortBy === 'total-desc')   return b.total  - a.total;
+      if (sortBy === 'total-asc')    return a.total  - b.total;
+      if (sortBy === 'balance-desc') return b.balance- a.balance;
+      return 0;
+    });
+
+    // Stats
+    let statTotal = 0, statPaid = 0, statOut = 0, statOverdue = 0;
+    const vendorSet = new Set();
+    list.forEach(i => {
+      statTotal   += i.total;
+      statPaid    += i.paidAmt;
+      statOut     += i.balance;
+      if (i.ageing > 60 && i.balance > 0) statOverdue += i.balance;
+      vendorSet.add(i.vendor);
+    });
+    const setV = el => el && (el.textContent = '');
+    document.getElementById('inv-stat-count').textContent   = list.length;
+    document.getElementById('inv-stat-total').textContent   = '₹' + statTotal.toLocaleString();
+    document.getElementById('inv-stat-paid').textContent    = '₹' + statPaid.toLocaleString();
+    document.getElementById('inv-stat-out').textContent     = '₹' + statOut.toLocaleString();
+    document.getElementById('inv-stat-overdue').textContent = '₹' + statOverdue.toLocaleString();
+    document.getElementById('inv-stat-vendors').textContent = vendorSet.size;
+    document.getElementById('inv-count-badge').textContent  = list.length;
+    
+    window.invCurrentPage = window.invCurrentPage || 1;
+    window.invRowsPerPage = window.invRowsPerPage || 10;
+    const totalItems = list.length;
+    const totalPages = window.invRowsPerPage === -1 ? 1 : Math.ceil(totalItems / window.invRowsPerPage);
+    if(window.invCurrentPage > totalPages) window.invCurrentPage = Math.max(1, totalPages);
+    
+    if(window.renderPaginationControls) window.renderPaginationControls(window.invCurrentPage, totalPages, 'inv-pagination', 'goToInvPage');
+    window.goToInvPage = function(p) { window.invCurrentPage = p; renderInvoices(); };
+    
+    document.getElementById('inv-table-footer').textContent = `${totalItems} record${totalItems!==1?'s':''} shown`;
+
+    const startIndex = window.invRowsPerPage === -1 ? 0 : (window.invCurrentPage - 1) * window.invRowsPerPage;
+    const paginatedList = window.invRowsPerPage === -1 ? list : list.slice(startIndex, startIndex + window.invRowsPerPage);
+
+    if (!paginatedList.length) {
+      tbody.innerHTML = '<tr><td colspan="12" class="py-12 text-center text-gray-400 font-medium">No invoices found matching your filters.</td></tr>';
+      document.getElementById('inv-card-grid').innerHTML = '<div class="py-10 text-center text-gray-400 text-sm font-bold">No invoices found.</div>';
+      return;
+    }
+
+    const statusCfg = {
+      paid:    { label:'Paid',    cls:'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+      partial: { label:'Partial', cls:'bg-orange-50 text-orange-700 border border-orange-200'   },
+      pending: { label:'Pending', cls:'bg-red-50 text-red-700 border border-red-200'             }
+    };
+    const rowBgCls = { paid:'bg-emerald-50/50 hover:bg-emerald-100/50', partial:'bg-amber-50/50 hover:bg-amber-100/50', pending:'bg-red-50/40 hover:bg-red-100/50' };
+    const cardBgCls = { paid:'bg-emerald-50/30 border-emerald-100', partial:'bg-amber-50/30 border-amber-100', pending:'bg-red-50/20 border-red-100' };
+
+    tbody.innerHTML = paginatedList.map((inv, index) => {
+      let i = startIndex + index;
+      const ageColor = inv.ageing <= 30 ? '#059669' : inv.ageing <= 60 ? '#d97706' : '#dc2626';
+      const sc = statusCfg[inv.st];
+      return `<tr class="${rowBgCls[inv.st] || 'bg-white hover:bg-gray-50'} transition-colors group">
+        <td class="py-2.5 px-4 text-center text-gray-400 text-[11px] font-medium">${i+1}</td>
+        <td class="py-2.5 px-4 text-[11px] font-bold text-gray-700 whitespace-nowrap">${window.formatDate ? window.formatDate(inv.date) : inv.date}</td>
+        <td class="py-2.5 px-4">
+          <span class="font-black text-blue-600 text-[12px]">${inv.number}</span>
+          ${inv.po ? `<p class="text-[9px] text-gray-400">PO: ${inv.po}</p>` : ''}
+        </td>
+        <td class="py-2.5 px-4">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black flex-shrink-0">${(inv.vendor||'?').charAt(0)}</div>
+            <span class="font-bold text-gray-700 text-[12px] truncate max-w-[130px]">${inv.vendor}</span>
+          </div>
+        </td>
+        <td class="py-2.5 px-4 text-[11px] text-gray-500">${inv.category || '–'}</td>
+        <td class="py-2.5 px-4 text-right text-[12px] text-gray-600 font-semibold">₹${(inv.basic||0).toLocaleString()}</td>
+        <td class="py-2.5 px-4 text-right text-[12px] text-gray-600">₹${(inv.gst||0).toLocaleString()}</td>
+        <td class="py-2.5 px-4 text-right font-black text-[13px] text-blue-700">₹${inv.total.toLocaleString()}</td>
+        <td class="py-2.5 px-4 text-center">
+          ${inv.balance <= 0 ? '<span class="text-gray-400 font-bold">—</span>' : `<span class="text-[10px] font-black px-2 py-0.5 rounded-full" style="background:${ageColor}18;color:${ageColor}">${inv.ageing}d</span>`}
+        </td>
+        <td class="py-2.5 px-4 text-center">
+          <span class="text-[10px] font-black px-2 py-1 rounded-lg ${sc.cls}">${sc.label}</span>
+        </td>
+        <td class="py-2.5 px-4 text-right font-black text-[13px] ${inv.balance > 0 ? 'text-red-600' : 'text-gray-400'}">₹${inv.balance.toLocaleString()}</td>
+        <td class="py-2.5 px-4 text-center">
+          <div class="flex gap-1 justify-center opacity-70 group-hover:opacity-100 transition-opacity">
+            <button class="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-blue-600 hover:bg-blue-50 shadow-sm transition" onclick="window.editInvoice(${inv.id})" title="Edit">
+              <span class="material-icons text-[14px]">edit</span>
+            </button>
+            <button class="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-emerald-600 hover:bg-emerald-50 shadow-sm transition" onclick="window._quickPayForInvoice(${JSON.stringify(inv.vendor).replace(/"/g,'&quot;')}, ${JSON.stringify(inv.number).replace(/"/g,'&quot;')})" title="Record Payment">
+              <span class="material-icons text-[14px]">payments</span>
+            </button>
+            <button class="w-7 h-7 rounded-lg border border-red-100 bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 shadow-sm transition" onclick="window._deleteInvoiceFromList(${inv.id})" title="Delete">
+              <span class="material-icons text-[14px]">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // Render exact image-matched Mobile Cards
+    const cardGrid = document.getElementById('inv-card-grid');
+    if(cardGrid) {
+      cardGrid.innerHTML = paginatedList.map(inv => {
+        const sc = statusCfg[inv.st];
+        const initial = (inv.vendor||'?').charAt(0).toUpperCase();
+        return `
+        <div class="${cardBgCls[inv.st] || 'bg-white border-gray-100'} rounded-2xl border shadow-sm p-4 relative">
+          
+          <!-- Avatar + Titles + Badge -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0" style="background:#5b21b6">${initial}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${inv.vendor}</p>
+              <p class="text-[11px] text-gray-400 uppercase font-semibold tracking-wider mt-0.5 truncate">${inv.number} • ${window.formatDate ? window.formatDate(inv.date) : inv.date}</p>
+            </div>
+            <span class="text-[10px] font-black px-2.5 py-1 rounded-lg ${sc.cls} shadow-sm">${sc.label}</span>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center">
+              <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-0.5">TOTAL</p>
+              <p class="text-[13px] font-black text-gray-800">₹${inv.total>=1000?(inv.total/1000).toFixed(1)+'k':inv.total}</p>
+            </div>
+            <div class="bg-emerald-50 rounded-xl p-2.5 flex flex-col items-center justify-center">
+              <p class="text-[9px] text-emerald-600 font-black uppercase tracking-widest mb-0.5">PAID</p>
+              <p class="text-[13px] font-black text-emerald-700">₹${(inv.total-inv.balance)>=1000?((inv.total-inv.balance)/1000).toFixed(1)+'k':(inv.total-inv.balance)}</p>
+            </div>
+            <div class="bg-red-50 rounded-xl p-2.5 flex flex-col items-center justify-center">
+              <p class="text-[9px] text-red-500 font-black uppercase tracking-widest mb-0.5">DUE</p>
+              <p class="text-[13px] font-black text-red-600">₹${inv.balance>=1000?(inv.balance/1000).toFixed(1)+'k':inv.balance}</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="flex gap-2 w-full">
+            <button onclick="window.editInvoice(${inv.id})" class="flex-1 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold text-[12px] flex items-center justify-center transition-colors">Edit</button>
+            <button onclick="window._deleteInvoiceFromList(${inv.id})" class="flex-1 py-2.5 rounded-xl bg-gray-50 text-gray-600 border border-gray-100 font-bold text-[12px] flex items-center justify-center transition-colors">Delete</button>
+            <button onclick="window._quickPayForInvoice(${JSON.stringify(inv.vendor).replace(/"/g,'&quot;')}, ${JSON.stringify(inv.number).replace(/"/g,'&quot;')})" class="flex-1 py-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 font-bold text-[12px] flex items-center justify-center transition-colors">+ Pay</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  /* ── Quick-pay from invoice row ──────────────────────────────── */
+  window._quickPayForInvoice = function(vendor, invNumber) {
+    window._editPaymentId        = null;
+    window._contextPaymentVendor = vendor;
+    window._lockPaymentVendor    = true;
+    window._paymentReturnPage    = 'invoices';
+    window.location.hash = 'add-payment';
+  };
+
+  /* ── Delete ──────────────────────────────────────────────────── */
+  window._deleteInvoiceFromList = function(id) {
+    if (!confirm('Delete this invoice? This cannot be undone.')) return;
+    window.invoiceList = (window.invoiceList || []).filter(i => i.id !== id);
+    window.saveToDatabase('deleteInvoice', { id });
+    renderInvoices();
+    window.showToaster('Invoice deleted');
+  };
+
+  /* ── Export CSV ──────────────────────────────────────────────── */
+  window._exportInvoicesCSV = function() {
+    const payments = window.paymentList || [];
+    const today    = new Date();
+    const rows     = [['#','Date','Invoice No','Vendor','Category','Basic','GST','Discount','RoundOff','Total','Paid','Balance','Ageing','PO','Remarks']];
+    (window.invoiceList || []).forEach((inv, i) => {
+      const paidAmt = payments.filter(p => p.vendor === inv.vendor &&
+        String(p.invoiceNumber||'').split(',').map(x=>x.trim()).includes(String(inv.number)))
+        .reduce((s,p)=>s+p.amount, 0);
+      const balance = inv.total - paidAmt;
+      const ageing  = Math.floor((today - new Date(inv.date)) / 86400000);
+      rows.push([i+1, inv.date, inv.number, inv.vendor, inv.category||'', inv.basic||0, inv.gst||0, inv.discount||0, inv.roundoff||0, inv.total, paidAmt, balance, balance<=0?'-':ageing+'d', inv.po||'', inv.remarks||'']);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'invoices_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  };
+
+  /* ── Event listeners & init ──────────────────────────────────── */
+  document.getElementById('invoice-search')?.addEventListener('input', renderInvoices);
+  document.getElementById('inv-filter-vendor')?.addEventListener('change', renderInvoices);
+  document.getElementById('inv-filter-status')?.addEventListener('change', renderInvoices);
+  document.getElementById('inv-sort')?.addEventListener('change', renderInvoices);
+  document.getElementById('inv-page-size')?.addEventListener('change', (e) => {
+    window.invRowsPerPage = parseInt(e.target.value);
+    window.invCurrentPage = 1;
+    renderInvoices();
+  });
+
+  populateVendorFilter();
+  renderInvoices();
+})();
+</script>

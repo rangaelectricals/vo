@@ -1,0 +1,156 @@
+<dialog id="modal-invoice" class="modal">
+  <div class="modal-box p-0 bg-white rounded-2xl shadow-2xl overflow-hidden" style="max-width:600px;width:100%">
+
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <div class="relative overflow-hidden" style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 60%,#60a5fa 100%)">
+      <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 80% 20%,#fff 0%,transparent 60%)"></div>
+      <div class="relative px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center shadow-inner">
+            <span class="material-icons text-white text-xl">receipt_long</span>
+          </div>
+          <div>
+            <h3 class="font-black text-white text-xl tracking-tight leading-none mb-0.5" id="invoice-modal-title">Register Invoice</h3>
+            <p class="text-blue-200 text-[11px] font-semibold tracking-wide">Fill in all required fields below</p>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-invoice').close()"
+          class="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-all duration-200">
+          <span class="material-icons text-lg">close</span>
+        </button>
+      </div>
+    </div>
+
+    <form id="invoice-form">
+      <input type="hidden" id="invoice-id" />
+
+      <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+
+        <!-- ── Vendor row ─────────────────────────────────── -->
+        <div>
+          <label class="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">
+            <span class="material-icons text-[13px]">store</span> Vendor
+            <span class="text-red-400 ml-0.5">*</span>
+          </label>
+          <select id="invoice-vendor" required
+            class="w-full border-2 border-gray-100 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 cursor-pointer">
+            <!-- Options populated by app.js -->
+          </select>
+        </div>
+
+        <!-- ── Invoice No + Date ──────────────────────────── -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">
+              <span class="material-icons text-[13px]">tag</span> Invoice No <span class="text-red-400 ml-0.5">*</span>
+            </label>
+            <input type="text" id="invoice-number" required placeholder="e.g. INV-1001"
+              class="w-full border-2 border-gray-100 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-sm font-black text-blue-600 placeholder:font-normal placeholder:text-gray-300 bg-gray-50/50 focus:bg-white outline-none transition-all duration-200" />
+          </div>
+          <div>
+            <label class="flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">
+              <span class="material-icons text-[13px]">calendar_today</span> Date <span class="text-red-400 ml-0.5">*</span>
+            </label>
+            <input type="date" id="invoice-date" required
+              class="w-full border-2 border-gray-100 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 bg-gray-50/50 focus:bg-white outline-none transition-all duration-200" />
+          </div>
+        </div>
+
+        <!-- ── AMOUNT BREAKDOWN section ───────────────────── -->
+        <div class="rounded-xl border-2 border-gray-100 bg-gray-50/40 p-4 space-y-4">
+          <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span class="material-icons text-[13px]">calculate</span> Amount Breakdown
+          </p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Basic -->
+            <div>
+              <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Basic Value (₹) <span class="text-red-400">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold select-none">₹</span>
+                <input type="number" id="invoice-basic" step="0.01" min="0" placeholder="0.00" required
+                  class="calculate-total w-full border-2 border-gray-200 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold text-gray-800 bg-white outline-none transition-all duration-200" />
+              </div>
+            </div>
+            <!-- GST Percentage -->
+            <div>
+              <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">GST (%) <span class="text-red-400">*</span></label>
+              <div class="relative flex items-center">
+                <input type="number" id="invoice-gst-percent" step="0.01" min="0" max="100" placeholder="0.00" required
+                  class="calculate-total w-full border-2 border-gray-200 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pr-4 py-2.5 text-sm font-bold text-gray-800 bg-white outline-none transition-all duration-200 pl-4" />
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold select-none">%</span>
+              </div>
+              <input type="hidden" id="invoice-gst" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Discount -->
+            <div>
+              <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">
+                Discount (₹) <span class="text-[9px] text-emerald-500 font-bold">(optional)</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-sm font-bold select-none">−</span>
+                <input type="number" id="invoice-discount" step="0.01" min="0" placeholder="0.00"
+                  class="calculate-total w-full border-2 border-dashed border-gray-200 hover:border-emerald-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold text-emerald-600 bg-white outline-none transition-all duration-200" />
+              </div>
+            </div>
+            <!-- Round Off -->
+            <div>
+              <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Round Off (₹)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold select-none">±</span>
+                <input type="number" id="invoice-roundoff" step="0.01" placeholder="0.00" value="0"
+                  class="calculate-total w-full border-2 border-dashed border-gray-200 hover:border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold text-gray-700 bg-white outline-none transition-all duration-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TOTAL ───────────────────────────────────────── -->
+        <div class="rounded-xl overflow-hidden border-2 border-blue-100 shadow-sm shadow-blue-100">
+          <div class="bg-blue-600 px-4 py-2 flex items-center gap-2">
+            <span class="material-icons text-white text-[15px]">payments</span>
+            <span class="text-white text-[10px] font-black uppercase tracking-widest">Total Invoice Amount</span>
+            <span class="ml-auto text-blue-200 text-[10px]">Auto-calculated</span>
+          </div>
+          <div class="relative bg-blue-50 px-4 py-3">
+            <span class="absolute left-5 top-1/2 -translate-y-1/2 text-blue-400 font-black text-lg select-none">₹</span>
+            <input type="number" id="invoice-total" step="0.01" min="0" placeholder="0.00" required readonly
+              class="w-full pl-8 pr-4 py-1 text-2xl font-black text-blue-700 bg-transparent outline-none border-none cursor-default tracking-tight" />
+          </div>
+        </div>
+
+        <!-- ── Remarks ─────────────────────────────────────── -->
+        <div>
+          <label class="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+            <span class="material-icons text-[13px]">notes</span> Remarks / Details
+            <span class="text-[9px] text-gray-300 ml-1 normal-case font-medium">(optional)</span>
+          </label>
+          <textarea id="invoice-remarks" placeholder="Any additional notes about this invoice..."
+            class="w-full border-2 border-gray-100 hover:border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10 rounded-xl px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 resize-none h-[70px] placeholder:text-gray-300"></textarea>
+        </div>
+
+      </div>
+
+      <!-- ── FOOTER ─────────────────────────────────────────── -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3">
+        <p class="text-[10px] text-gray-400 font-medium"><span class="text-red-400 font-bold">*</span> Required fields</p>
+        <div class="flex gap-2.5">
+          <button type="button" onclick="document.getElementById('modal-invoice').close()"
+            class="px-5 py-2.5 text-sm font-bold text-gray-500 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:text-gray-700 shadow-sm transition-all duration-200">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-6 py-2.5 text-sm font-bold text-white rounded-xl flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+            style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
+            <span class="material-icons text-[16px]">save</span> Save Invoice
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>

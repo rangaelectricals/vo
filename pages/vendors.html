@@ -1,0 +1,292 @@
+<!-- ════════════════════════════════════ VENDORS PAGE ════ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/20 bg-premium-pattern animate-fadeIn p-5">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-black text-gray-800 tracking-tight">Vendor Master</h1>
+      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Manage all registered vendors and their outstanding positions</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- View Controls Removed for Responsive Unified View -->
+      <!-- Sort -->
+      <select id="vnd-sort" onchange="window._renderVendorsPage()" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="outstanding-desc">Outstanding ↓</option>
+        <option value="outstanding-asc">Outstanding ↑</option>
+        <option value="invoices-desc">Most Invoices</option>
+      </select>
+      <!-- Search -->
+      <div class="relative">
+        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">search</span>
+        <input type="text" id="vendor-search" placeholder="Search vendors..." oninput="window._renderVendorsPage()"
+          class="pl-8 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm w-52 transition-all" />
+      </div>
+      <!-- Export -->
+      <button onclick="window.exportVendorList()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 shadow-sm transition">
+        <span class="material-icons text-[16px]">download</span> Export
+      </button>
+      <!-- Add -->
+      <button onclick="window.openVendorModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+        style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">
+        <span class="material-icons text-[18px]">person_add</span> Add Vendor
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS STRIP ─────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-1">
+      <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Vendors</span>
+      <span class="text-2xl font-black text-gray-800" id="stat-vendors-count">--</span>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-1">
+      <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Active (w/ Balance)</span>
+      <span class="text-2xl font-black text-indigo-600" id="stat-vendors-active">--</span>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-1">
+      <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Outstanding</span>
+      <span class="text-2xl font-black text-red-600" id="stat-vendors-outstanding">--</span>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-1">
+      <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Pending Invoices</span>
+      <span class="text-2xl font-black text-orange-500" id="stat-vendors-pending">--</span>
+    </div>
+  </div>
+
+  <!-- ── RESPONSIVE TABLE & CARD GRID ─────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-indigo-500 text-[18px]">groups</span>
+        <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Vendor Directory</span>
+        <span class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded-full" id="vnd-count-badge">0</span>
+      </div>
+    </div>
+    
+    <!-- Desktop Table -->
+    <div class="overflow-x-auto hidden md:block">
+      <table class="w-full text-left border-collapse min-w-[900px]">
+        <thead>
+          <tr class="bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-200">
+            <th class="py-3 px-4 w-8">#</th>
+            <th class="py-3 px-4">VENDOR</th>
+            <th class="py-3 px-4">CONTACT</th>
+            <th class="py-3 px-4 hidden md:table-cell">GST NO</th>
+            <th class="py-3 px-4 text-center">INVOICES</th>
+            <th class="py-3 px-4 text-right">TOTAL BILLED</th>
+            <th class="py-3 px-4 text-right">TOTAL PAID</th>
+            <th class="py-3 px-4 text-right">OUTSTANDING</th>
+            <th class="py-3 px-4 text-center">STATUS</th>
+            <th class="py-3 px-4 text-center w-32">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="vendor-table-body" class="text-sm divide-y divide-gray-50">
+          <tr><td colspan="10" class="py-10 text-center text-gray-400">Loading vendors...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/40 hidden md:flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] text-gray-400 font-medium" id="vnd-table-footer">0 records</span>
+        <select id="vnd-page-size" class="text-[11px] border border-gray-200 rounded px-2 py-1 outline-none cursor-pointer">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="-1">All</option>
+        </select>
+      </div>
+      <div id="vnd-pagination"></div>
+    </div>
+    
+    <!-- Mobile Card View -->
+    <div id="vnd-card-grid" class="grid grid-cols-1 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+
+
+  // Helper: compute vendor financials
+  function vendorStats(v) {
+    const invs  = (window.invoiceList || []).filter(i => i.vendor === v.name);
+    const pays  = (window.paymentList || []).filter(p => p.vendor === v.name);
+    const billed = invs.reduce((s,i) => s+i.total, 0);
+    const paid   = pays.reduce((s,p) => s+p.amount, 0);
+    const out    = billed - paid;
+    const pendingInv = invs.filter(inv => {
+      const paidForInv = pays.filter(p =>
+        String(p.invoiceNumber||'').split(',').map(x=>x.trim()).includes(String(inv.number)))
+        .reduce((s,p)=>s+p.amount,0);
+      return inv.total > paidForInv;
+    }).length;
+    return { billed, paid, out, invCount: invs.length, payCount: pays.length, pendingInv };
+  }
+
+  window._renderVendorsPage = function() {
+    const q      = (document.getElementById('vendor-search')?.value || '').toLowerCase();
+    const sortBy = document.getElementById('vnd-sort')?.value || 'name-asc';
+
+    let vendors = (window.vendorList || []).map(v => ({ ...v, ...vendorStats(v) }));
+
+    if (q) vendors = vendors.filter(v =>
+      (v.name||'').toLowerCase().includes(q) ||
+      (v.phone||'').toLowerCase().includes(q) ||
+      (v.email||'').toLowerCase().includes(q) ||
+      (v.gst||'').toLowerCase().includes(q) ||
+      (v.contact||'').toLowerCase().includes(q)
+    );
+
+    vendors.sort((a,b) => {
+      if (sortBy==='name-asc')          return (a.name||'').localeCompare(b.name||'');
+      if (sortBy==='name-desc')         return (b.name||'').localeCompare(a.name||'');
+      if (sortBy==='outstanding-desc')  return b.out - a.out;
+      if (sortBy==='outstanding-asc')   return a.out - b.out;
+      if (sortBy==='invoices-desc')     return b.invCount - a.invCount;
+      return 0;
+    });
+
+    // Stats
+    const allStats = (window.vendorList||[]).map(v => vendorStats(v));
+    document.getElementById('stat-vendors-count').textContent       = (window.vendorList||[]).length;
+    document.getElementById('stat-vendors-active').textContent      = allStats.filter(s=>s.out>0).length;
+    document.getElementById('stat-vendors-outstanding').textContent = '₹'+allStats.reduce((s,x)=>s+x.out,0).toLocaleString();
+    document.getElementById('stat-vendors-pending').textContent     = allStats.reduce((s,x)=>s+x.pendingInv,0);
+    document.getElementById('vnd-count-badge').textContent          = vendors.length;
+
+    window.vndCurrentPage = window.vndCurrentPage || 1;
+    window.vndRowsPerPage = window.vndRowsPerPage || 10;
+    const totalItems = vendors.length;
+    const totalPages = window.vndRowsPerPage === -1 ? 1 : Math.ceil(totalItems / window.vndRowsPerPage);
+    if(window.vndCurrentPage > totalPages) window.vndCurrentPage = Math.max(1, totalPages);
+    
+    if(window.renderPaginationControls) window.renderPaginationControls(window.vndCurrentPage, totalPages, 'vnd-pagination', 'goToVendorPage');
+    window.goToVendorPage = function(p) { window.vndCurrentPage = p; window._renderVendorsPage(); };
+
+    document.getElementById('vnd-table-footer').textContent         = `${totalItems} vendor${totalItems!==1?'s':''} shown`;
+
+    const startIndex = window.vndRowsPerPage === -1 ? 0 : (window.vndCurrentPage - 1) * window.vndRowsPerPage;
+    const paginatedVendors = window.vndRowsPerPage === -1 ? vendors : vendors.slice(startIndex, startIndex + window.vndRowsPerPage);
+
+    const tbody = document.getElementById('vendor-table-body');
+    if (tbody) {
+      if (!paginatedVendors.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-12 text-center text-gray-400 font-medium">No vendors found.</td></tr>';
+        if (document.getElementById('vnd-card-grid')) document.getElementById('vnd-card-grid').innerHTML = '<div class="col-span-1 py-10 text-center text-gray-400 text-sm font-bold">No vendors found.</div>';
+        return;
+      }
+      tbody.innerHTML = paginatedVendors.map((v, index) => {
+        let i = startIndex + index;
+        const stColor = v.out > 0 ? '#dc2626' : '#059669';
+        const stLabel = v.out > 0 ? 'Outstanding' : 'Settled';
+        const stCls   = v.out > 0 ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+        return `<tr class="hover:bg-indigo-50/20 transition-colors group">
+          <td class="py-2.5 px-4 text-center text-gray-400 text-[11px]">${i+1}</td>
+          <td class="py-2.5 px-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm text-white flex-shrink-0"
+                style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">${(v.name||'?').charAt(0)}</div>
+              <div>
+                <p class="font-bold text-gray-800 text-[13px]">${v.name}</p>
+                ${v.address ? `<p class="text-[9px] text-gray-400 max-w-[160px] truncate">${v.address}</p>` : ''}
+              </div>
+            </div>
+          </td>
+          <td class="py-2.5 px-4">
+            <p class="text-[11px] font-semibold text-gray-700">${v.contact||'–'}</p>
+            <p class="text-[10px] text-gray-400">${v.phone||''} ${v.email ? '· '+v.email : ''}</p>
+          </td>
+          <td class="py-2.5 px-4 hidden md:table-cell text-[11px] font-mono text-gray-500">${v.gst||'–'}</td>
+          <td class="py-2.5 px-4 text-center">
+            <span class="text-[11px] font-black text-blue-600">${v.invCount}</span>
+            ${v.pendingInv>0?`<span class="ml-1 text-[9px] text-orange-500 font-bold">(${v.pendingInv} pending)</span>`:''}
+          </td>
+          <td class="py-2.5 px-4 text-right text-[12px] font-semibold text-gray-600">₹${v.billed.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right text-[12px] font-semibold text-emerald-600">₹${v.paid.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right font-black text-[13px]" style="color:${stColor}">₹${v.out.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-center">
+            <span class="text-[10px] font-black px-2 py-1 rounded-lg ${stCls}">${stLabel}</span>
+          </td>
+          <td class="py-2.5 px-4 text-center">
+            <div class="flex gap-1 justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+              <button class="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 hover:bg-indigo-100 shadow-sm transition" onclick="window.goToVendorReportPage(${v.id})" title="View Report">
+                <span class="material-icons text-[14px]">bar_chart</span>
+              </button>
+              <button class="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 shadow-sm transition" onclick="window.editVendor(${v.id})" title="Edit">
+                <span class="material-icons text-[14px]">edit</span>
+              </button>
+              <button class="w-7 h-7 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center text-red-600 hover:bg-red-100 shadow-sm transition" onclick="window.deleteVendor(${v.id})" title="Delete">
+                <span class="material-icons text-[14px]">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Render unified mobile cards
+    const grid = document.getElementById('vnd-card-grid');
+    if (!grid) return;
+    grid.innerHTML = paginatedVendors.map(v => `
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative cursor-pointer hover:shadow-md transition-all group" onclick="window.goToVendorReportPage(${v.id})">
+          <!-- Edge gradient -->
+          <div class="absolute top-0 left-0 bottom-0 w-[5px] rounded-l-2xl" style="background:linear-gradient(180deg,#4f46e5,#7c3aed)"></div>
+
+          <!-- Avatar + Titles + Badge -->
+          <div class="flex items-center gap-3 mb-4 ml-1">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0 shadow-sm" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">${(v.name||'?').charAt(0).toUpperCase()}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${v.name}</p>
+              <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${v.gst || (v.phone||'No Details')}</p>
+            </div>
+            <span class="text-[10px] font-black px-2.5 py-1 rounded-lg ${v.out>0?'bg-red-50 text-red-600 border-red-100':'bg-emerald-50 text-emerald-600 border-emerald-100'} shadow-sm border">${v.out>0?'Pending':'✓ Clear'}</span>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 mb-4 ml-1">
+            <div class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-gray-100/50">
+              <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-0.5">INVOICES</p>
+              <p class="text-[13px] font-black text-gray-800">${v.invCount}</p>
+            </div>
+            <div class="bg-emerald-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-emerald-50">
+              <p class="text-[9px] text-emerald-600 font-black uppercase tracking-widest mb-0.5">PAID</p>
+              <p class="text-[13px] font-black text-emerald-700">₹${v.paid>=1000?(v.paid/1000).toFixed(1)+'k':v.paid}</p>
+            </div>
+            <div class="${v.out>0?'bg-red-50/50':'bg-gray-50/50'} rounded-xl p-2.5 flex flex-col items-center justify-center border ${v.out>0?'border-red-50':'border-gray-50'}">
+              <p class="text-[9px] ${v.out>0?'text-red-500':'text-gray-500'} font-black uppercase tracking-widest mb-0.5">DUE</p>
+              <p class="text-[13px] font-black ${v.out>0?'text-red-600':'text-gray-600'}">₹${v.out>=1000?(v.out/1000).toFixed(1)+'k':v.out}</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="flex gap-2 w-full ml-1 pr-1">
+            <button class="flex-[1] py-2.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold text-[12px] flex items-center justify-center shadow-sm transition-colors active:scale-95" onclick="event.stopPropagation();window.editVendor(${v.id})">Edit</button>
+            <button class="flex-[1.5] py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold text-[12px] flex items-center justify-center shadow-sm transition-colors active:scale-95" onclick="event.stopPropagation();window._addInvoiceForVendor('${v.name}')">+ Invoice</button>
+            <button class="flex-[1.5] py-2.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-[12px] flex items-center justify-center shadow-sm transition-colors active:scale-95" onclick="event.stopPropagation();window._addPaymentForVendor('${v.name}')">+ Pay</button>
+          </div>
+        </div>`).join('') || '<div class="col-span-1 py-10 text-center text-gray-400 text-sm font-bold">No vendors found.</div>';
+    
+    // Security Pass: immediately strip buttons if viewer
+    if (window.applyRoleRestrictions) setTimeout(()=>window.applyRoleRestrictions(), 10);
+  };
+
+  // Quick-add invoice / payment for vendor
+  window._addInvoiceForVendor = function(name) {
+    window._editInvoiceId=null; window._contextVendorName=name; window._lockInvoiceVendor=true; window._invoiceReturnPage='vendors'; window.location.hash='add-invoice';
+  };
+  window._addPaymentForVendor = function(name) {
+    window._editPaymentId=null; window._contextPaymentVendor=name; window._lockPaymentVendor=true; window._paymentReturnPage='vendors'; window.location.hash='add-payment';
+  };
+
+  document.getElementById('vnd-page-size')?.addEventListener('change', (e) => {
+    window.vndRowsPerPage = parseInt(e.target.value);
+    window.vndCurrentPage = 1;
+    window._renderVendorsPage();
+  });
+
+  window._renderVendorsPage();
+})();
+</script>

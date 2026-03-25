@@ -1,0 +1,359 @@
+<!-- ══════════════════════════════════════════════ PAYMENTS LIST PAGE ══ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/20 bg-premium-pattern animate-fadeIn p-5">
+
+  <!-- ── PAGE HEADER ────────────────────────────────────────────── -->
+  <div class="max-w-full mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-gray-800 tracking-tight">Payment Register</h1>
+      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">All payment transactions recorded against vendors</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Filter by vendor -->
+      <select id="pay-filter-vendor" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+        <option value="">All Vendors</option>
+      </select>
+      <!-- Filter by mode -->
+      <select id="pay-filter-mode" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+        <option value="">All Modes</option>
+        <option>NEFT</option><option>IMPS</option><option>RTGS</option>
+        <option>Cheque</option><option>Cash</option><option>UPI</option>
+      </select>
+      <!-- Date from -->
+      <div class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm">
+        <span class="material-icons text-gray-400 text-[14px]">date_range</span>
+        <input type="date" id="pay-filter-from" class="text-[11px] font-semibold text-gray-600 outline-none bg-transparent" placeholder="From" title="From Date"/>
+        <span class="text-gray-300">–</span>
+        <input type="date" id="pay-filter-to" class="text-[11px] font-semibold text-gray-600 outline-none bg-transparent" placeholder="To" title="To Date"/>
+      </div>
+      <!-- Search -->
+      <div class="relative">
+        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">search</span>
+        <input type="text" id="payment-search" placeholder="Search..." class="pl-8 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm w-48 transition-all" />
+      </div>
+      <!-- Export -->
+      <button onclick="window._exportPaymentsCSV()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 shadow-sm transition">
+        <span class="material-icons text-[16px]">download</span> Export
+      </button>
+      <!-- Add -->
+      <button onclick="window._editPaymentId=null;window._contextPaymentVendor=null;window._lockPaymentVendor=false;window._paymentReturnPage='payments';window.location.hash='add-payment'"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+        style="background:linear-gradient(135deg,#047857,#064e3b)">
+        <span class="material-icons text-[18px]">add</span> Record Payment
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS ───────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div class="pay-stat-card">
+      <span class="pstat-label">Total Payments</span>
+      <span class="pstat-val text-gray-800" id="pay-stat-count">--</span>
+    </div>
+    <div class="pay-stat-card">
+      <span class="pstat-label">Total Paid Out</span>
+      <span class="pstat-val text-emerald-600" id="pay-stat-total">--</span>
+    </div>
+    <div class="pay-stat-card">
+      <span class="pstat-label">NEFT / IMPS / RTGS</span>
+      <span class="pstat-val text-blue-700" id="pay-stat-online">--</span>
+    </div>
+    <div class="pay-stat-card">
+      <span class="pstat-label">Cash / Cheque / UPI</span>
+      <span class="pstat-val text-purple-600" id="pay-stat-offline">--</span>
+    </div>
+    <div class="pay-stat-card">
+      <span class="pstat-label">This Month</span>
+      <span class="pstat-val text-teal-600" id="pay-stat-month">--</span>
+    </div>
+    <div class="pay-stat-card">
+      <span class="pstat-label">Vendors Paid</span>
+      <span class="pstat-val text-indigo-600" id="pay-stat-vendors">--</span>
+    </div>
+  </div>
+
+  <!-- ── TABLE ───────────────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-emerald-600 text-[18px]">payments</span>
+        <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Transactions</span>
+        <span class="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-0.5 rounded-full" id="pay-count-badge">0</span>
+      </div>
+      <select id="pay-sort" class="text-[11px] border border-gray-200 rounded-lg px-2 py-1 font-bold bg-white text-gray-600 outline-none cursor-pointer">
+        <option value="date-desc">Newest First</option>
+        <option value="date-asc">Oldest First</option>
+        <option value="amount-desc">Amount ↓</option>
+        <option value="amount-asc">Amount ↑</option>
+      </select>
+    </div>
+
+    <div class="overflow-x-auto hidden md:block">
+      <table class="w-full text-left border-collapse min-w-[860px]">
+        <thead>
+          <tr class="bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-200">
+            <th class="py-3 px-4 w-8">#</th>
+            <th class="py-3 px-4">DATE</th>
+            <th class="py-3 px-4">VENDOR</th>
+            <th class="py-3 px-4">AGAINST INVOICE(S)</th>
+            <th class="py-3 px-4 text-right">AMOUNT PAID</th>
+            <th class="py-3 px-4 text-center">MODE</th>
+            <th class="py-3 px-4">REF / UTR</th>
+            <th class="py-3 px-4">BANK</th>
+            <th class="py-3 px-4">VOUCHER</th>
+            <th class="py-3 px-4 hidden lg:table-cell">REMARKS</th>
+            <th class="py-3 px-4 text-center w-24">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="payment-table-body" class="text-sm divide-y divide-gray-50">
+          <tr><td colspan="11" class="py-10 text-center text-gray-400">Loading payments...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div id="pay-card-grid" class="grid grid-cols-1 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
+
+    <!-- Footer -->
+    <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/40 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] text-gray-500 font-semibold" id="pay-table-footer">0 records</span>
+        <select id="pay-page-size" class="text-[11px] border border-gray-200 rounded px-2 py-1 outline-none cursor-pointer">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="-1">All</option>
+        </select>
+      </div>
+      <div id="pay-pagination" class="flex items-center"></div>
+      <div class="flex gap-3 text-[10px] font-bold">
+        <span class="text-blue-600" id="pay-foot-online">Online: ₹0</span>
+        <span class="text-purple-600" id="pay-foot-offline">Cash/Cheque: ₹0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pay-stat-card { background:white;border-radius:14px;padding:14px 16px;border:1px solid #f0fdf4;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:4px; }
+  .pstat-label { font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em; }
+  .pstat-val   { font-size:18px;font-weight:900;line-height:1.1; }
+</style>
+
+<script>
+(function() {
+  function populateVendorFilter() {
+    const sel = document.getElementById('pay-filter-vendor');
+    if (!sel) return;
+    if (sel.tomselect) sel.tomselect.destroy();
+    const vendors = [...new Set((window.paymentList||[]).map(p=>p.vendor))].sort();
+    sel.innerHTML = '<option value="">All Vendors</option>' +
+      vendors.map(v => `<option value="${v}">${v}</option>`).join('');
+    if (window.TomSelect) new TomSelect(sel, { plugins: ['clear_button'], allowEmptyOption: true, create: false, placeholder: 'All Vendors', maxOptions: null });
+  }
+
+  function renderPayments() {
+    const q      = (document.getElementById('payment-search')?.value || '').toLowerCase();
+    const vendor = document.getElementById('pay-filter-vendor')?.value  || '';
+    const mode   = document.getElementById('pay-filter-mode')?.value    || '';
+    const from   = document.getElementById('pay-filter-from')?.value    || '';
+    const to     = document.getElementById('pay-filter-to')?.value      || '';
+    const sortBy = document.getElementById('pay-sort')?.value           || 'date-desc';
+    const tbody  = document.getElementById('payment-table-body');
+    if (!tbody) return;
+
+    const now   = new Date();
+    const curY  = now.getFullYear(), curM = now.getMonth();
+
+    let list = [...(window.paymentList || [])];
+
+    if (q) list = list.filter(p =>
+      (p.vendor||'').toLowerCase().includes(q) ||
+      (p.invoiceNumber||'').toLowerCase().includes(q) ||
+      (p.mode||'').toLowerCase().includes(q) ||
+      (p.against||'').toLowerCase().includes(q) ||
+      (p.bank||'').toLowerCase().includes(q) ||
+      (p.voucher||'').toLowerCase().includes(q) ||
+      (p.remarks||'').toLowerCase().includes(q)
+    );
+    if (vendor) list = list.filter(p => p.vendor === vendor);
+    if (mode)   list = list.filter(p => p.mode   === mode);
+    if (from)   list = list.filter(p => p.date   >= from);
+    if (to)     list = list.filter(p => p.date   <= to);
+
+    list.sort((a, b) => {
+      if (sortBy === 'date-desc')   return new Date(b.date) - new Date(a.date);
+      if (sortBy === 'date-asc')    return new Date(a.date) - new Date(b.date);
+      if (sortBy === 'amount-desc') return b.amount - a.amount;
+      if (sortBy === 'amount-asc')  return a.amount - b.amount;
+      return 0;
+    });
+
+    // Stats
+    const onlineModes = ['NEFT','IMPS','RTGS','UPI'];
+    let total=0, online=0, offline=0, thisMonth=0;
+    const vendorSet = new Set();
+    list.forEach(p => {
+      total += p.amount;
+      if (onlineModes.includes(p.mode)) online += p.amount; else offline += p.amount;
+      const d = new Date(p.date);
+      if (d.getFullYear()===curY && d.getMonth()===curM) thisMonth += p.amount;
+      vendorSet.add(p.vendor);
+    });
+
+    document.getElementById('pay-stat-count').textContent   = list.length;
+    document.getElementById('pay-stat-total').textContent   = '₹' + total.toLocaleString();
+    document.getElementById('pay-stat-online').textContent  = '₹' + online.toLocaleString();
+    document.getElementById('pay-stat-offline').textContent = '₹' + offline.toLocaleString();
+    document.getElementById('pay-stat-month').textContent   = '₹' + thisMonth.toLocaleString();
+    document.getElementById('pay-stat-vendors').textContent = vendorSet.size;
+    document.getElementById('pay-count-badge').textContent  = list.length;
+    
+    window.payCurrentPage = window.payCurrentPage || 1;
+    window.payRowsPerPage = window.payRowsPerPage || 10;
+    const totalItems = list.length;
+    const totalPages = window.payRowsPerPage === -1 ? 1 : Math.ceil(totalItems / window.payRowsPerPage);
+    if(window.payCurrentPage > totalPages) window.payCurrentPage = Math.max(1, totalPages);
+    
+    if(window.renderPaginationControls) window.renderPaginationControls(window.payCurrentPage, totalPages, 'pay-pagination', 'goToPayPage');
+    window.goToPayPage = function(p) { window.payCurrentPage = p; renderPayments(); };
+    
+    document.getElementById('pay-table-footer').textContent = `${totalItems} record${totalItems!==1?'s':''} shown`;
+    document.getElementById('pay-foot-online').textContent  = `Online: ₹${online.toLocaleString()}`;
+    document.getElementById('pay-foot-offline').textContent = `Cash/Cheque: ₹${offline.toLocaleString()}`;
+
+    const startIndex = window.payRowsPerPage === -1 ? 0 : (window.payCurrentPage - 1) * window.payRowsPerPage;
+    const paginatedList = window.payRowsPerPage === -1 ? list : list.slice(startIndex, startIndex + window.payRowsPerPage);
+
+    if (!paginatedList.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="py-12 text-center text-gray-400 font-medium">No payment records found.</td></tr>';
+      document.getElementById('pay-card-grid').innerHTML = '<div class="py-10 text-center text-gray-400 text-sm font-bold">No payments found.</div>';
+      return;
+    }
+
+    const modeColor = { NEFT:'bg-blue-100 text-blue-700', IMPS:'bg-indigo-100 text-indigo-700', RTGS:'bg-violet-100 text-violet-700',
+      Cheque:'bg-amber-100 text-amber-700', Cash:'bg-orange-100 text-orange-700', UPI:'bg-purple-100 text-purple-700' };
+
+    tbody.innerHTML = paginatedList.map((p, index) => {
+      let i = startIndex + index;
+      const mc = modeColor[p.mode] || 'bg-gray-100 text-gray-700';
+      return `<tr class="hover:bg-emerald-50/20 transition-colors group">
+        <td class="py-2.5 px-4 text-center text-gray-400 text-[11px] font-medium">${i+1}</td>
+        <td class="py-2.5 px-4 text-[11px] font-bold text-gray-700 whitespace-nowrap">${window.formatDate ? window.formatDate(p.date) : p.date}</td>
+        <td class="py-2.5 px-4">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black flex-shrink-0">${(p.vendor||'?').charAt(0)}</div>
+            <span class="font-bold text-gray-700 text-[12px] truncate max-w-[130px]">${p.vendor}</span>
+          </div>
+        </td>
+        <td class="py-2.5 px-4 max-w-[200px]">
+          <div class="flex flex-wrap gap-1">
+            ${String(p.invoiceNumber||'').split(',').map(n=>n.trim()).filter(Boolean).map(n=>
+              `<span class="text-[9px] font-black bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded">${n}</span>`
+            ).join('')}
+          </div>
+        </td>
+        <td class="py-2.5 px-4 text-right">
+          <div class="font-black text-[14px] text-emerald-600">₹${p.amount.toLocaleString()}</div>
+          ${window._excessPayments && window._excessPayments[p.id] ? `<div class="text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded ml-auto w-max border border-amber-100 mt-1 shadow-sm" title="Overpayment effectively carrying forward as vendor credit">Credit: ₹${window._excessPayments[p.id].toLocaleString()}</div>` : ''}
+        </td>
+        <td class="py-2.5 px-4 text-center">
+          <span class="text-[10px] font-black px-2 py-1 rounded-lg ${mc}">${p.mode||'–'}</span>
+        </td>
+        <td class="py-2.5 px-4 text-[11px] font-semibold text-gray-600">${p.against || '–'}</td>
+        <td class="py-2.5 px-4 text-[11px] text-gray-500">${p.bank || '–'}</td>
+        <td class="py-2.5 px-4 text-[11px] text-gray-500">${p.voucher || '–'}</td>
+        <td class="py-2.5 px-4 text-[11px] text-gray-400 truncate max-w-[140px] hidden lg:table-cell">${p.remarks || '–'}</td>
+        <td class="py-2.5 px-4 text-center">
+          <div class="flex gap-1 justify-center opacity-70 group-hover:opacity-100 transition-opacity">
+            <button class="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-blue-600 hover:bg-blue-50 shadow-sm transition" onclick="window.editPayment(${p.id})" title="Edit">
+              <span class="material-icons text-[14px]">edit</span>
+            </button>
+            <button class="w-7 h-7 rounded-lg border border-red-100 bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 shadow-sm transition" onclick="window._deletePaymentFromList(${p.id})" title="Delete">
+              <span class="material-icons text-[14px]">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // Render exact image-matched Mobile Cards
+    const cardGrid = document.getElementById('pay-card-grid');
+    if (cardGrid) {
+      cardGrid.innerHTML = paginatedList.map(p => {
+        const mc = modeColor[p.mode] || 'bg-gray-100 text-gray-700';
+        const initial = (p.vendor||'?').charAt(0).toUpperCase();
+        return `
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative">
+          
+          <!-- Avatar + Titles + Badge -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0" style="background:#059669">${initial}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${p.vendor}</p>
+              <p class="text-[11px] text-gray-400 uppercase font-semibold tracking-wider mt-0.5 truncate">${p.against || 'Direct'} • ${window.formatDate ? window.formatDate(p.date) : p.date}</p>
+            </div>
+            <span class="text-[10px] font-black px-2.5 py-1 rounded-lg ${mc} shadow-sm">${p.mode||'–'}</span>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="bg-emerald-50 rounded-xl p-2.5 flex flex-col items-center justify-center relative">
+              <p class="text-[9px] text-emerald-600 font-black uppercase tracking-widest mb-0.5">AMOUNT</p>
+              <p class="text-[13px] font-black text-emerald-700">₹${p.amount>=1000?(p.amount/1000).toFixed(1)+'k':p.amount}</p>
+              ${window._excessPayments && window._excessPayments[p.id] ? `<p class="text-[8px] font-black text-amber-600 absolute bottom-1 right-2" title="Unallocated Vendor Credit">CR: ₹${window._excessPayments[p.id]}</p>` : ''}
+            </div>
+            <div class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center">
+              <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-0.5">REF/UTR</p>
+              <p class="text-[11px] font-bold text-gray-800 truncate w-full text-center">${p.against || '–'}</p>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-2.5 flex flex-col items-center justify-center">
+              <p class="text-[9px] text-blue-500 font-black uppercase tracking-widest mb-0.5">BANK</p>
+              <p class="text-[11px] font-bold text-blue-700 truncate w-full text-center">${p.bank || '–'}</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="flex gap-2 w-full">
+            <button onclick="window.editPayment(${p.id})" class="flex-1 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold text-[12px] flex items-center justify-center transition-colors">Edit</button>
+            <button onclick="window._deletePaymentFromList(${p.id})" class="flex-1 py-2.5 rounded-xl bg-gray-50 text-gray-600 border border-gray-100 font-bold text-[12px] flex items-center justify-center transition-colors">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  window._deletePaymentFromList = function(id) {
+    if (!confirm('Delete this payment? This cannot be undone.')) return;
+    window.paymentList = (window.paymentList || []).filter(p => p.id !== id);
+    window.saveToDatabase('deletePayment', { id });
+    renderPayments();
+    window.showToaster('Payment deleted');
+  };
+
+  window._exportPaymentsCSV = function() {
+    const rows = [['#','Date','Vendor','Invoices','Amount','Mode','Ref/UTR','Bank','Voucher','Remarks']];
+    (window.paymentList || []).forEach((p, i) => {
+      rows.push([i+1, p.date, p.vendor, p.invoiceNumber, p.amount, p.mode||'', p.against||'', p.bank||'', p.voucher||'', p.remarks||'']);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'payments_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  };
+
+  /* ── Event listeners ─────────────────────────────────────────── */
+  ['payment-search','pay-filter-vendor','pay-filter-mode','pay-filter-from','pay-filter-to','pay-sort'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', renderPayments);
+    document.getElementById(id)?.addEventListener('change', renderPayments);
+  });
+  document.getElementById('pay-page-size')?.addEventListener('change', (e) => {
+    window.payRowsPerPage = parseInt(e.target.value);
+    window.payCurrentPage = 1;
+    renderPayments();
+  });
+
+  populateVendorFilter();
+  renderPayments();
+})();
+</script>

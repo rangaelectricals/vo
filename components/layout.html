@@ -1,0 +1,78 @@
+<!-- Premium Glass Sidebar -->
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#1c2434] shadow-xl z-40 hidden md:flex flex-col transition-transform text-white animate-fadeIn" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
+  <div class="px-6 py-5 border-b border-gray-700/50">
+    <h1 class="text-[20px] font-black text-white tracking-wide leading-tight">VendorApp</h1>
+    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">RANGA ELECTRICALS</p>
+  </div>
+  <nav class="mt-4 px-3 flex-1 overflow-y-auto">
+    <ul class="flex flex-col gap-1 list-none m-0 p-0">
+      <li><a href="#dashboard" id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">dashboard</span> Dashboard</a></li>
+      <li><a href="#vendors" id="nav-vendors" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">groups</span> Vendors</a></li>
+      <li><a href="#invoices" id="nav-invoices" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">receipt_long</span> Invoices</a></li>
+      <li><a href="#payments" id="nav-payments" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">payments</span> Payments</a></li>
+      <li><a href="#report" id="nav-report" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">bar_chart</span> Outstanding Report</a></li>
+      <li><a href="#analytics" id="nav-analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">query_stats</span> AI Analytics</a></li>
+      <li><a href="#users" id="nav-users" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all" style="display: none;"><span class="material-icons text-[20px]">manage_accounts</span> Manage Users</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- Mobile Drawer -->
+<div id="mobile-drawer" class="fixed inset-0 z-50 bg-black bg-opacity-40 hidden md:hidden transition-opacity">
+  <aside class="absolute top-0 left-0 h-full w-64 bg-[#1c2434] shadow-2xl text-white flex flex-col">
+    <div class="flex items-center justify-between px-4 py-5 border-b border-gray-700/50">
+      <div>
+        <h1 class="text-xl font-black text-white tracking-wide">VendorApp</h1>
+        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">RANGA ELECTRICALS</p>
+      </div>
+      <button class="flex items-center justify-center p-1 text-gray-400 hover:text-white rounded-md hover:bg-gray-800" id="drawer-close" aria-label="Close drawer">
+        <span class="material-icons text-xl">close</span>
+      </button>
+    </div>
+    <nav class="mt-4 px-3 flex-1 overflow-y-auto">
+      <ul class="flex flex-col gap-1 list-none m-0 p-0">
+        <li><a href="#dashboard" id="drawer-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">dashboard</span> Dashboard</a></li>
+        <li><a href="#vendors" id="drawer-vendors" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">groups</span> Vendors</a></li>
+        <li><a href="#invoices" id="drawer-invoices" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">receipt_long</span> Invoices</a></li>
+        <li><a href="#payments" id="drawer-payments" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">payments</span> Payments</a></li>
+        <li><a href="#report" id="drawer-report" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">bar_chart</span> Outstanding Report</a></li>
+        <li><a href="#analytics" id="drawer-analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">query_stats</span> AI Analytics</a></li>
+        <li><a href="#users" id="drawer-users" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all" style="display: none;"><span class="material-icons text-[20px]">manage_accounts</span> Manage Users</a></li>
+      </ul>
+    </nav>
+  </aside>
+</div>
+
+<!-- Premium Glass Top Bar -->
+<header class="fixed top-0 left-0 right-0 h-[64px] bg-white border-b border-gray-200 z-30 px-6 flex items-center justify-between" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
+  <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full w-full basis-1/2">
+    <button class="flex items-center justify-center p-1.5 rounded-md text-gray-600 hover:bg-gray-100 md:hidden" id="sidebar-toggle" aria-label="Open sidebar">
+      <span class="material-icons">menu</span>
+    </button>
+    <div class="flex items-center gap-3">
+      <button class="hidden md:flex items-center justify-center p-1.5 rounded-md text-gray-600 hover:bg-gray-100" aria-label="Toggle Menu">
+        <span class="material-icons" style="font-size: 20px;">menu</span>
+      </button>
+      <span class="text-[17px] font-bold text-gray-800 tracking-tight" id="header-page-title">Dashboard</span>
+    </div>
+  </div>
+  <nav class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <div id="layout-avatar" class="w-8 h-8 rounded-full bg-[#3f51b5] text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">A</div>
+      <div class="hidden sm:flex flex-col items-start justify-center ml-1">
+        <div class="flex items-center gap-1.5">
+          <span id="layout-username" class="text-sm font-semibold text-gray-700 leading-none">Admin</span>
+          <span id="layout-role-badge" class="bg-[#3f51b5] text-white text-[9px] px-1.5 py-0.5 rounded leading-none font-bold tracking-wider">ADMIN</span>
+        </div>
+      </div>
+    </div>
+    <button onclick="window.logoutUser()" class="text-red-500 hover:text-red-600 p-1.5 rounded-md transition-colors ml-2 hover:bg-red-50 flex items-center justify-center" aria-label="Logout">
+      <span class="material-icons" style="font-size: 20px;">logout</span>
+    </button>
+  </nav>
+</header>
+<!-- Main Content Wrapper -->
+<main id="main-wrapper" class="pt-[64px] md:pl-64 transition-all min-h-screen bg-[#f3f4f6]">
+  <div id="main-content" class="h-full"></div>
+  <div id="modals"></div>
+</main>

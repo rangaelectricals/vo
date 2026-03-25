@@ -1,0 +1,62 @@
+<dialog id="modal-vendor" class="modal">
+  <div class="modal-box p-0 bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+    <div class="bg-gray-50/80 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+          <span class="material-icons text-sm">person</span>
+        </div>
+        <h3 class="font-black text-gray-800 text-lg tracking-tight" id="vendor-modal-title">Add Vendor</h3>
+      </div>
+      <button type="button" class="text-gray-400 hover:text-gray-700 transition" onclick="document.getElementById('modal-vendor').close()">
+        <span class="material-icons text-xl">close</span>
+      </button>
+    </div>
+    
+    <form id="vendor-form">
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="vendor-id" />
+        
+        <div>
+          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Company Name <span class="text-red-500">*</span></label>
+          <input type="text" placeholder="e.g. Acme Corporation" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" id="vendor-name" required />
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Contact Person</label>
+            <input type="text" placeholder="John Doe" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" id="vendor-contact" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Phone Number</label>
+            <input type="text" placeholder="+91 98765..." class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" id="vendor-phone" />
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Email Address</label>
+          <input type="email" placeholder="contact@company.com" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" id="vendor-email" />
+        </div>
+        
+        <div>
+          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">GST No</label>
+          <input type="text" placeholder="22AAAAA0000A1Z5" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" id="vendor-gst" />
+        </div>
+        
+        <div>
+          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Billing Address</label>
+          <textarea placeholder="Enter full address..." class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none h-20" id="vendor-address"></textarea>
+        </div>
+      </div>
+      
+      <div class="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 rounded-b-2xl">
+        <button type="button" class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-all" onclick="document.getElementById('modal-vendor').close()">Cancel</button>
+        <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2">
+          <span class="material-icons text-[16px]">save</span> Save Vendor
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

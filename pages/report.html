@@ -1,0 +1,581 @@
+<!-- ══════════════════════════════════ OUTSTANDING REPORT ════ -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50/20 bg-premium-pattern animate-fadeIn p-5 space-y-5">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-gray-800 tracking-tight">Outstanding Report</h1>
+      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Global master ledger · all pending liabilities with ageing</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Vendor filter -->
+      <select id="rpt-filter-vendor" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer">
+        <option value="">All Vendors</option>
+      </select>
+      <!-- Status filter -->
+      <select id="rpt-filter-status" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer">
+        <option value="">All Status</option>
+        <option value="pending">Pending Only</option>
+        <option value="partial">Partial</option>
+        <option value="paid">Fully Paid</option>
+      </select>
+      <!-- Ageing filter -->
+      <select id="rpt-filter-age" class="text-sm border border-gray-200 rounded-lg px-3 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer">
+        <option value="">All Ages</option>
+        <option value="0-30">0–30 Days</option>
+        <option value="31-60">31–60 Days</option>
+        <option value="60+">60+ Days</option>
+      </select>
+      <!-- Date Range -->
+      <input type="date" id="rpt-filter-date-from" class="text-[12px] border border-gray-200 rounded-lg px-2 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer" title="From Date" />
+      <span class="text-[11px] text-gray-400 font-bold">to</span>
+      <input type="date" id="rpt-filter-date-to" class="text-[12px] border border-gray-200 rounded-lg px-2 py-2 font-semibold bg-white shadow-sm text-gray-700 outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer" title="To Date" />
+      <!-- Search -->
+      <div class="relative">
+        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">search</span>
+        <input type="text" id="report-search" placeholder="Search vendor / invoice..."
+          class="pl-8 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm w-52 transition-all" />
+      </div>
+      <!-- Clear Filters -->
+      <button onclick="window._clearRptFilters()" class="flex items-center justify-center p-2 bg-white border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 hover:text-red-500 shadow-sm transition-all" title="Clear Filters">
+        <span class="material-icons text-[18px]">filter_alt_off</span>
+      </button>
+      <!-- Export Buttons -->
+      <button onclick="window._exportFilteredExcel()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 shadow-sm hover:bg-emerald-100 hover:shadow-md active:scale-95 transition-all">
+        <span class="material-icons text-[18px]">table_view</span> Excel
+      </button>
+      <button onclick="window._exportFilteredPDF()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-red-700 bg-red-50 border border-red-200 shadow-sm hover:bg-red-100 hover:shadow-md active:scale-95 transition-all">
+        <span class="material-icons text-[18px]">picture_as_pdf</span> PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS STRIP ─────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Liabilities</p>
+      <p class="text-2xl font-black text-gray-800 mt-1" id="global-total">₹ 0</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Paid</p>
+      <p class="text-2xl font-black text-emerald-600 mt-1" id="global-paid">₹ 0</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 bg-orange-50/30">
+      <p class="text-[9px] font-black text-orange-400 uppercase tracking-widest">Total Outstanding</p>
+      <p class="text-2xl font-black text-orange-600 mt-1" id="global-outstanding">₹ 0</p>
+    </div>
+    <div class="bg-red-50/40 rounded-2xl p-4 shadow-sm border border-red-100">
+      <p class="text-[9px] font-black text-red-400 uppercase tracking-widest">Critically Overdue</p>
+      <p class="text-2xl font-black text-red-600 mt-1" id="global-overdue">₹ 0</p>
+    </div>
+  </div>
+
+  <!-- ── TABLE ───────────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-purple-600 text-[18px]">assessment</span>
+        <span class="text-[11px] font-black text-gray-700 uppercase tracking-widest">Master Ledger</span>
+        <span class="bg-purple-100 text-purple-700 text-[10px] font-black px-2 py-0.5 rounded-full" id="rpt-count-badge">0</span>
+      </div>
+      <div class="flex items-center gap-3 text-[10px] font-bold text-gray-500">
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>0–30d</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-400 inline-block"></span>31–60d</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>60+d</span>
+        <select id="rpt-sort" class="border border-gray-200 rounded-lg px-2 py-1 bg-white font-bold text-[11px] outline-none cursor-pointer">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="balance-desc">Balance ↓</option>
+          <option value="age-desc">Oldest Debt</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto hidden md:block pb-10">
+      <table class="w-full text-left border-collapse min-w-[1250px]">
+        <thead>
+          <tr class="bg-gray-50/80 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-200">
+            <th class="py-3 px-4 w-8">#</th>
+            <th class="py-3 px-4">DATE</th>
+            <th class="py-3 px-4">VENDOR</th>
+            <th class="py-3 px-4">INVOICE NO</th>
+            <th class="py-3 px-4 text-right hidden xl:table-cell">BASIC</th>
+            <th class="py-3 px-4 text-right hidden xl:table-cell">GST</th>
+            <th class="py-3 px-4 text-right hidden xl:table-cell">DISC.</th>
+            <th class="py-3 px-4 text-right hidden xl:table-cell">R-OFF</th>
+            <th class="py-3 px-4 text-right bg-blue-50/20">TOTAL</th>
+            <th class="py-3 px-4 text-right bg-emerald-50/20">PAID</th>
+            <th class="py-3 px-4 text-right bg-red-50/10">BALANCE</th>
+            <th class="py-3 px-4 text-center">AGEING</th>
+            <th class="py-3 px-4 text-center">STATUS</th>
+            <th class="py-3 px-4">PAYMENTS INFO</th>
+            <th class="py-3 px-4 text-center w-28">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="outstanding-report-body" class="text-sm divide-y divide-gray-50">
+          <tr><td colspan="14" class="py-12 text-center text-gray-400">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div id="rep-card-grid" class="grid grid-cols-1 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
+
+    <!-- Footer totals -->
+    <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/40 flex flex-col md:flex-row items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-[11px] text-gray-500 font-semibold" id="rpt-table-footer">0 records</span>
+        <select id="rpt-page-size" class="text-[11px] border border-gray-200 rounded px-2 py-1 outline-none cursor-pointer">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="-1">All</option>
+        </select>
+      </div>
+      <div id="rpt-pagination" class="flex items-center"></div>
+      <div class="flex gap-4 text-[11px] font-bold">
+        <span class="text-gray-700">Shown Total: <span id="rpt-foot-total" class="text-gray-900">₹0</span></span>
+        <span class="text-emerald-600">Paid: <span id="rpt-foot-paid">₹0</span></span>
+        <span class="text-red-600">Balance: <span id="rpt-foot-balance">₹0</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  function populateVendorFilter() {
+    const sel = document.getElementById('rpt-filter-vendor');
+    if (!sel) return;
+    if (sel.tomselect) sel.tomselect.destroy();
+    const vendors = [...new Set((window.invoiceList||[]).map(i=>i.vendor))].sort();
+    sel.innerHTML = '<option value="">All Vendors</option>' +
+      vendors.map(v=>`<option value="${v}">${v}</option>`).join('');
+    if (window.TomSelect) new TomSelect(sel, { plugins: ['clear_button'], allowEmptyOption: true, create: false, placeholder: 'All Vendors', maxOptions: null });
+  }
+
+  function getPaymentsForInv(inv) {
+    if (window.getPaymentRefsForInvoice) return window.getPaymentRefsForInvoice(inv.number);
+    return [];
+  }
+
+  function getPaid(inv) {
+    if (window.getPaidAmountForInvoice) return window.getPaidAmountForInvoice(inv.number);
+    return 0;
+  }
+
+  function renderRpt() {
+    const q       = (document.getElementById('report-search')?.value||'').toLowerCase();
+    const vendor  = document.getElementById('rpt-filter-vendor')?.value  || '';
+    const status  = document.getElementById('rpt-filter-status')?.value  || '';
+    const ageFlt  = document.getElementById('rpt-filter-age')?.value     || '';
+    const sortBy  = document.getElementById('rpt-sort')?.value           || 'date-desc';
+    const tbody   = document.getElementById('outstanding-report-body');
+    if (!tbody) return;
+    const today = new Date();
+
+    let list = (window.invoiceList||[]).map(inv => {
+      const invPays = getPaymentsForInv(inv);
+      const rawPaid = getPaid(inv);
+      const paid    = Math.min(inv.total, rawPaid);
+      const balance = Math.max(0, inv.total - rawPaid);
+      const ageing  = Math.floor((today - new Date(inv.date)) / 86400000);
+      const st      = balance <= 0 ? 'paid' : paid > 0 ? 'partial' : 'pending';
+      
+      const pRefsText = invPays.map(p => `${p.date} (${p.mode||'Pay'}): ₹${p.allocated}`).join(' | ');
+      const pRefsHtml = invPays.map(p => `<span class="bg-gray-100 rounded px-1.5 py-0.5 text-gray-600 block mt-1 whitespace-nowrap"><b class="text-gray-800">${window.formatDate?window.formatDate(p.date):p.date}</b>: ₹${p.allocated.toLocaleString()} ${p.mode?`[${p.mode}]`:''}</span>`).join('');
+
+      return { ...inv, paid, balance, ageing, st, pRefsText, pRefsHtml };
+    });
+
+    const dateFrom = document.getElementById('rpt-filter-date-from')?.value;
+    const dateTo   = document.getElementById('rpt-filter-date-to')?.value;
+
+    if (q)      list = list.filter(r => r.vendor.toLowerCase().includes(q) || String(r.number).toLowerCase().includes(q) || (r.remarks||'').toLowerCase().includes(q));
+    if (vendor) list = list.filter(r => r.vendor === vendor);
+    if (status) list = list.filter(r => r.st === status);
+    if (ageFlt === '0-30')  list = list.filter(r => r.ageing <= 30);
+    if (ageFlt === '31-60') list = list.filter(r => r.ageing > 30 && r.ageing <= 60);
+    if (ageFlt === '60+')   list = list.filter(r => r.ageing > 60);
+    if (dateFrom) { const fd = new Date(dateFrom).setHours(0,0,0,0); list = list.filter(r => new Date(r.date).getTime() >= fd); }
+    if (dateTo)   { const td = new Date(dateTo).setHours(23,59,59,999); list = list.filter(r => new Date(r.date).getTime() <= td); }
+
+    list.sort((a,b) => {
+      if (sortBy==='date-desc')    return new Date(b.date)-new Date(a.date);
+      if (sortBy==='date-asc')     return new Date(a.date)-new Date(b.date);
+      if (sortBy==='balance-desc') return b.balance - a.balance;
+      if (sortBy==='age-desc')     return b.ageing - a.ageing;
+      return 0;
+    });
+    
+    window._currentReportList = list;
+
+    const allExcess = (window.paymentList||[]).reduce((s,p) => s + (window._excessPayments && window._excessPayments[p.id] ? window._excessPayments[p.id] : 0), 0);
+    
+    // Update stats
+    const allData = (window.invoiceList||[]).map(inv => {
+      const raw=getPaid(inv); return { total:inv.total, paid: Math.min(inv.total, raw), balance: Math.max(0, inv.total-raw) }; });
+    const gt=allData.reduce((s,x)=>s+x.total,0);
+    const gp=allData.reduce((s,x)=>s+x.paid,0) + allExcess;
+    const go=Math.max(0, allData.reduce((s,x)=>s+x.balance,0) - allExcess);
+    
+    const gover=(window.invoiceList||[]).reduce((s,inv)=>{
+      const raw=getPaid(inv);
+      const b=Math.max(0, inv.total-raw);
+      const a=Math.floor((today-new Date(inv.date))/86400000);
+      return s+(b>0&&a>60?b:0);
+    },0);
+    
+    document.getElementById('global-total').textContent         = '₹ '+gt.toLocaleString();
+    document.getElementById('global-paid').textContent          = '₹ '+gp.toLocaleString();
+    document.getElementById('global-outstanding').textContent   = '₹ '+go.toLocaleString();
+    document.getElementById('global-overdue').textContent       = '₹ '+gover.toLocaleString();
+
+    // Filtered totals for footer
+    const ft=list.reduce((s,r)=>s+r.total,0);
+    const fp=list.reduce((s,r)=>s+r.paid,0);
+    const fb=list.reduce((s,r)=>s+r.balance,0);
+
+    // GROUP BY VENDOR FOR UI
+    const groupedMap = {};
+    list.forEach(inv => {
+      if(!groupedMap[inv.vendor]) {
+        groupedMap[inv.vendor] = { vendor: inv.vendor, total:0, paid:0, balance:0, invoices:[] };
+      }
+      groupedMap[inv.vendor].total += inv.total;
+      groupedMap[inv.vendor].paid += inv.paid;
+      groupedMap[inv.vendor].balance += inv.balance;
+      groupedMap[inv.vendor].invoices.push(inv);
+    });
+    const groupedData = Object.values(groupedMap).map(g => {
+      const vPays = (window.paymentList||[]).filter(p => p.vendor === g.vendor);
+      const vExcess = vPays.reduce((s,p) => s + (window._excessPayments && window._excessPayments[p.id] ? window._excessPayments[p.id] : 0), 0);
+      g.excess = vExcess;
+      g.paid = g.paid + vExcess;
+      g.balance = Math.max(0, g.balance - vExcess);
+      return g;
+    }).sort((a,b) => b.balance - a.balance || a.vendor.localeCompare(b.vendor));
+
+    document.getElementById('rpt-count-badge').textContent   = groupedData.length;
+    
+    window.rptCurrentPage = window.rptCurrentPage || 1;
+    window.rptRowsPerPage = window.rptRowsPerPage || 10;
+    const totalItems = groupedData.length;
+    const totalPages = window.rptRowsPerPage === -1 ? 1 : Math.ceil(totalItems / window.rptRowsPerPage);
+    if(window.rptCurrentPage > totalPages) window.rptCurrentPage = Math.max(1, totalPages);
+    
+    if(window.renderPaginationControls) window.renderPaginationControls(window.rptCurrentPage, totalPages, 'rpt-pagination', 'goToRptPage');
+    window.goToRptPage = function(p) { window.rptCurrentPage = p; renderRpt(); };
+    
+    document.getElementById('rpt-table-footer').textContent  = `${totalItems} vendor${totalItems!==1?'s':''} shown`;
+    document.getElementById('rpt-foot-total').textContent    = '₹'+ft.toLocaleString();
+    document.getElementById('rpt-foot-paid').textContent     = '₹'+fp.toLocaleString();
+    document.getElementById('rpt-foot-balance').textContent  = '₹'+fb.toLocaleString();
+
+    const startIndex = window.rptRowsPerPage === -1 ? 0 : (window.rptCurrentPage - 1) * window.rptRowsPerPage;
+    const paginatedGroups = window.rptRowsPerPage === -1 ? groupedData : groupedData.slice(startIndex, startIndex + window.rptRowsPerPage);
+
+    if (!paginatedGroups.length) {
+      tbody.innerHTML='<tr><td colspan="14" class="py-12 text-center text-gray-400 font-medium">No records match the filters.</td></tr>';
+      document.getElementById('rep-card-grid').innerHTML = '<div class="py-10 text-center text-gray-400 text-sm font-bold">No records found.</div>';
+      return;
+    }
+
+    const stCls = { paid:'bg-emerald-50 text-emerald-700 border-emerald-200', partial:'bg-amber-50 text-amber-700 border-amber-200', pending:'bg-red-50 text-red-700 border-red-200' };
+    const stLabel = { paid:'Paid', partial:'Partial', pending:'Pending' };
+    const rowBgCls = { paid:'bg-emerald-50/50 hover:bg-emerald-100/50', partial:'bg-amber-50/50 hover:bg-amber-100/50', pending:'bg-red-50/40 hover:bg-red-100/50' };
+    const cardBgCls = { paid:'bg-emerald-50/40 border-emerald-200', partial:'bg-amber-50/40 border-amber-200', pending:'bg-red-50/30 border-red-200' };
+
+    let html = '';
+    paginatedGroups.forEach((grp, idx) => {
+      const vSt = grp.balance <= 0 ? 'paid' : (grp.paid > 0 ? 'partial' : 'pending');
+      const vid = (window.vendorList||[]).find(v=>v.name===grp.vendor)?.id;
+      html += `
+        <tr class="bg-gray-100 hover:bg-gray-200 cursor-pointer font-bold border-y border-gray-300" onclick="const rr=document.querySelectorAll('.v-row-${idx}'); rr.forEach(e=>e.classList.toggle('hidden')); const icon=this.querySelector('.exp-icon'); if(icon) icon.textContent=rr[0].classList.contains('hidden')?'expand_more':'expand_less';">
+           <td class="py-4 px-4 text-center text-gray-500"><span class="material-icons text-[18px] exp-icon">expand_more</span></td>
+           <td colspan="3" class="py-4 px-4 text-[13px] text-blue-900 uppercase tracking-wide">
+             <div class="flex items-center gap-3">
+               <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">${grp.vendor.charAt(0).toUpperCase()}</div>
+               ${grp.vendor} 
+               <span class="bg-blue-200 text-blue-800 text-[10px] px-2 py-0.5 rounded-full">${grp.invoices.length} Inv</span>
+             </div>
+           </td>
+           <td colspan="4" class="py-4 px-4 hidden xl:table-cell text-center"></td>
+           <td class="py-4 px-4 text-right text-[13px] text-gray-800 font-black">₹${grp.total.toLocaleString()}</td>
+           <td class="py-4 px-4 text-right text-[13px] text-emerald-700 font-black">₹${grp.paid.toLocaleString()}</td>
+           <td class="py-4 px-4 text-right">
+             <div class="text-[13px] ${grp.balance>0?'text-red-700':'text-gray-500'} font-black">₹${grp.balance.toLocaleString()}</div>
+             ${grp.excess > 0 ? `<div class="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded shadow-sm border border-amber-100 ml-auto w-max mt-1">Cr: ₹${grp.excess.toLocaleString()}</div>` : ''}
+           </td>
+           <td colspan="2" class="py-4 px-4 text-center"><span class="text-[10px] uppercase font-black px-2 py-1 rounded ${vSt==='paid'?'bg-emerald-200 text-emerald-800 border border-emerald-300':vSt==='partial'?'bg-amber-200 text-amber-800 border border-amber-300':'bg-red-200 text-red-800 border border-red-300'}">${vSt}</span></td>
+           <td colspan="2" class="py-4 px-4 text-center" onclick="event.stopPropagation()">
+              <button class="bg-white border rounded shadow-sm px-3 py-1.5 text-[11px] text-blue-700 hover:bg-blue-50 transition font-bold" onclick="window.goToVendorReportPage(${vid?vid:'null'})">Open Ledger</button>
+           </td>
+        </tr>
+      `;
+
+      html += grp.invoices.map((r, subIdx) => {
+        const ageCls = r.ageing<=30 ? 'bg-emerald-50 text-emerald-600' : r.ageing<=60 ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600';
+        const dotCls = r.ageing<=30 ? 'bg-emerald-400' : r.ageing<=60 ? 'bg-orange-400' : 'bg-red-500';
+        return `<tr class="v-row-${idx} hidden ${rowBgCls[r.st] || 'bg-white hover:bg-gray-50'} transition-colors group cursor-pointer border-b border-gray-100/50" onclick="if(arguments[0].target.closest('button')||arguments[0].target.closest('td:last-child'))return;if(${vid?vid:'null'})window.goToVendorReportPage(${vid?vid:'null'})">
+          <td class="py-2.5 px-4 text-center text-gray-400 text-[11px] border-r border-gray-100/50">${subIdx+1}</td>
+          <td class="py-2.5 px-4 text-[11px] font-bold text-gray-700 whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full inline-block mr-1 ${dotCls}"></span>
+            ${window.formatDate?window.formatDate(r.date):r.date}
+          </td>
+          <td class="py-2.5 px-4 text-[11px] italic text-gray-400 hidden xl:table-cell">↳ Linked</td>
+          <td class="py-2.5 px-4 font-bold text-blue-600 text-[12px]">${r.number}</td>
+          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.basic||0).toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.gst||0).toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.discount||0).toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.roundoff||0).toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right font-black text-gray-800 bg-blue-50/10">₹${r.total.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">₹${r.paid.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-right font-black ${r.balance>0?'text-red-500 bg-red-50/10':'text-gray-400'}">₹${r.balance.toLocaleString()}</td>
+          <td class="py-2.5 px-4 text-center">
+            ${r.balance <= 0 ? '<span class="text-gray-400 font-bold">—</span>' : `<span class="text-[10px] font-black px-2 py-1 rounded-lg ${ageCls}">${r.ageing}d</span>`}
+          </td>
+          <td class="py-2.5 px-4 text-center">
+            <span class="text-[10px] font-black px-2 py-0.5 rounded border ${stCls[r.st]}">${stLabel[r.st]}</span>
+          </td>
+          <td class="py-2.5 px-4 text-[9px]">
+            ${r.pRefsHtml || '<span class="text-gray-300 italic px-1">No Payments</span>'}
+          </td>
+          <td class="py-2.5 px-4 text-center" onclick="event.stopPropagation()">
+            <div class="flex gap-1 justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+              ${r.balance>0?`<button class="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 shadow-sm transition" onclick="window._editPaymentId=null;window._contextPaymentVendor='${r.vendor.replace(/'/g,"\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='report';window.location.hash='add-payment'" title="Record Payment"><span class='material-icons text-[13px]'>payments</span></button>`:''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    });
+    tbody.innerHTML = html;
+
+    // Render exact image-matched Mobile Cards
+    const cardGrid = document.getElementById('rep-card-grid');
+    if (cardGrid) {
+      cardGrid.innerHTML = paginatedGroups.map((grp, idx) => {
+        const vid = (window.vendorList||[]).find(v=>v.name===grp.vendor)?.id;
+        const initial = grp.vendor.charAt(0).toUpperCase();
+        const vSt = grp.balance <= 0 ? 'paid' : (grp.paid > 0 ? 'partial' : 'pending');
+
+        return `
+          <div class="${cardBgCls[vSt] || 'bg-white border-gray-100'} rounded-2xl border shadow-sm p-4 relative mb-4 transition-all">
+             <div class="flex items-center justify-between cursor-pointer" onclick="const rr=document.getElementById('m-v-row-${idx}'); rr.classList.toggle('hidden'); const icon=this.querySelector('.exp-icon-m'); if(icon) icon.textContent=rr.classList.contains('hidden')?'expand_more':'expand_less';">
+               <div class="flex items-center gap-3 w-[70%]">
+                 <div class="w-12 h-12 rounded-full flex flex-col items-center justify-center font-black text-white text-xl flex-shrink-0 shadow-sm" style="background:#5b21b6">${initial}</div>
+                 <div class="min-w-0">
+                   <p class="font-black text-gray-800 text-[15px] truncate">${grp.vendor}</p>
+                   <p class="text-[11px] text-gray-500 font-bold mt-0.5">${grp.invoices.length} Invoices Found</p>
+                 </div>
+               </div>
+               <div class="flex flex-col items-end w-[30%]">
+                 <div class="text-[12px] font-black ${grp.balance>0?'text-red-600':'text-emerald-600'}">₹${grp.balance>=1000?(grp.balance/1000).toFixed(1)+'k':grp.balance} Due</div>
+                 ${grp.excess > 0 ? `<div class="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded shadow-sm border border-amber-100 mt-1">Cr: ₹${grp.excess.toLocaleString()}</div>` : ''}
+                 <span class="material-icons text-gray-800 mt-1 exp-icon-m border rounded bg-white">expand_more</span>
+               </div>
+             </div>
+             
+             <div id="m-v-row-${idx}" class="hidden mt-4 pt-4 border-t border-gray-300/30 space-y-3">
+                ${grp.invoices.map(r => `
+                   <div class="${rowBgCls[r.st]||'bg-white'} rounded-xl p-3 border shadow-sm relative">
+                     <div class="flex justify-between items-start mb-2">
+                       <div>
+                         <p class="font-black text-blue-700 text-[13px]">${r.number}</p>
+                         <p class="text-[10px] text-gray-500 font-bold">${window.formatDate?window.formatDate(r.date):r.date}</p>
+                       </div>
+                       <div class="text-right">
+                         <p class="text-[12px] font-black ${r.balance>0?'text-red-500':'text-gray-400'}">₹${r.balance>=1000?(r.balance/1000).toFixed(1)+'k':r.balance}</p>
+                         <p class="text-[9px] font-black uppercase mt-1 px-1 rounded ${stCls[r.st]}">${stLabel[r.st]}</p>
+                       </div>
+                     </div>
+                     <div class="bg-white/80 rounded border border-gray-100 p-2 mt-2">
+                       <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider mb-1">Payments Applied</p>
+                       ${r.pRefsHtml || '<p class="text-[9px] text-gray-400 italic">None yet</p>'}
+                     </div>
+                   </div>
+                `).join('')}
+                <button onclick="window.goToVendorReportPage(${vid?vid:'null'})" class="w-full mt-3 py-2 shadow-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[12px] transition active:scale-95">Open Vendor Ledger</button>
+             </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  window._exportFilteredExcel = function() {
+    if (!window._currentReportList || window._currentReportList.length === 0) return alert('No records to export');
+    const cols = [
+      { header: 'Date', key: 'date', width: 15 },
+      { header: 'Vendor', key: 'vendor', width: 25, bold: true },
+      { header: 'Invoice No', key: 'number', width: 15 },
+      { header: 'Basic', key: 'basic', width: 12, format: 'currency' },
+      { header: 'GST', key: 'gst', width: 12, format: 'currency' },
+      { header: 'RoundOff', key: 'roundoff', width: 10, format: 'currency' },
+      { header: 'Total', key: 'total', width: 15, format: 'currency', fontColor: 'FF1F2937', bold: true },
+      { header: 'Paid', key: 'paid', width: 15, format: 'currency', fontColor: 'FF059669', bold: true },
+      { header: 'Balance', key: 'balance', width: 15, format: 'currency', fontColor: 'FFDC2626', bold: true },
+      { header: 'Ageing', key: 'ageing', width: 10, align: 'center' },
+      { header: 'Status', key: 'st', width: 12 },
+      { header: 'Payment Info', key: 'pRefsText', width: 35 },
+      { header: 'Remarks', key: 'remarks', width: 25 }
+    ];
+    const rows = window._currentReportList.map(r => [
+      window.formatDate ? window.formatDate(r.date) : r.date,
+      r.vendor, r.number, r.basic||0, r.gst||0, r.roundoff||0,
+      r.total, r.paid, r.balance, r.balance <= 0 ? '-' : r.ageing + 'd',
+      (r.st.charAt(0).toUpperCase() + r.st.slice(1)),
+      r.pRefsText || 'None', r.remarks || '-'
+    ]);
+    const ts = new Date().toISOString().slice(0,10);
+    const vendorName = document.getElementById('rpt-filter-vendor')?.value;
+    const vendorDetails = vendorName ? (window.vendorList||[]).find(v=>v.name===vendorName) : null;
+    let meta = [
+      { label: 'Date', value: ts },
+      { label: 'Records Included', value: rows.length.toString() },
+      { label: 'Total Billed', value: '₹ ' + rows.reduce((s,x)=>s+x[6],0).toLocaleString() },
+      { label: 'Total Balance', value: '₹ ' + rows.reduce((s,x)=>s+x[8],0).toLocaleString() }
+    ];
+    if(vendorDetails) {
+      meta.unshift({ label: 'Vendor', value: vendorDetails.name });
+      if(vendorDetails.contact) meta.splice(1, 0, { label: 'Contact', value: vendorDetails.contact });
+      if(vendorDetails.phone) meta.splice(2, 0, { label: 'Phone', value: vendorDetails.phone });
+      if(vendorDetails.gst) meta.splice(3, 0, { label: 'GST', value: vendorDetails.gst });
+    }
+    window.exportToExcel(`Filtered_Report_${ts}`, 'Outstanding', cols, rows, meta);
+  };
+
+  window._exportFilteredPDF = function() {
+    if (!window._currentReportList || window._currentReportList.length === 0) return alert('No records to export');
+    if (typeof window.jspdf === 'undefined') return alert('PDF Generator failed to load');
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    
+    // Brand header
+    doc.setFillColor(30, 58, 138); // blue-900
+    doc.rect(0, 0, doc.internal.pageSize.width, 24, 'F');
+    doc.setTextColor(255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Global Outstanding Report', 14, 15);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.width - 50, 15);
+    
+    const vendorName = document.getElementById('rpt-filter-vendor')?.value;
+    const vendorDetails = vendorName ? (window.vendorList||[]).find(v=>v.name===vendorName) : null;
+    let startY = 32;
+
+    if (vendorDetails) {
+      doc.setTextColor(31, 41, 55);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(vendorDetails.name, 14, 32);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      let vInfo = [];
+      if (vendorDetails.contact) vInfo.push('Contact: ' + vendorDetails.contact);
+      if (vendorDetails.phone) vInfo.push('Phone: ' + vendorDetails.phone);
+      if (vendorDetails.email) vInfo.push('Email: ' + vendorDetails.email);
+      if (vendorDetails.gst) vInfo.push('GST: ' + vendorDetails.gst);
+      if (vendorDetails.address) vInfo.push('Address: ' + vendorDetails.address);
+      
+      doc.text(vInfo.slice(0, 3).join('  |  '), 14, 37);
+      if (vInfo.length > 3) {
+        doc.text(vInfo.slice(3).join('  |  '), 14, 42);
+        startY = 48;
+      } else {
+        startY = 44;
+      }
+    } else if (vendorName) {
+      doc.setTextColor(31, 41, 55);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text(`Filtered by Vendor: ${vendorName}`, 14, 32);
+      startY = 38;
+    }
+    
+    const head = [['Date', 'Vendor', 'Invoice No', 'Basic', 'Total', 'Paid', 'Balance', 'Ageing', 'Status', 'Payments']];
+    const body = window._currentReportList.map(r => [
+      window.formatDate ? window.formatDate(r.date) : r.date,
+      r.vendor, r.number,
+      'Rs ' + (r.basic||0).toLocaleString(),
+      'Rs ' + r.total.toLocaleString(),
+      'Rs ' + r.paid.toLocaleString(),
+      'Rs ' + r.balance.toLocaleString(),
+      r.balance <= 0 ? '-' : r.ageing + 'd',
+      (r.st.charAt(0).toUpperCase() + r.st.slice(1)),
+      r.pRefsText || 'None'
+    ]);
+
+    doc.autoTable({
+      startY: startY,
+      head: head,
+      body: body,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold', halign: 'center' }, // blue-500
+      columnStyles: {
+        0: { cellWidth: 20 },
+        1: { cellWidth: 'auto', fontStyle: 'bold' },
+        2: { cellWidth: 22, halign: 'center' },
+        3: { cellWidth: 20, halign: 'right' },
+        4: { cellWidth: 24, halign: 'right', fontStyle: 'bold' },
+        5: { cellWidth: 24, halign: 'right', textColor: [5, 150, 105] }, // emerald
+        6: { cellWidth: 24, halign: 'right', fontStyle: 'bold', textColor: [220, 38, 38] }, // red
+        7: { cellWidth: 14, halign: 'center' },
+        8: { cellWidth: 16, halign: 'center' },
+        9: { cellWidth: 45 }
+      },
+      didParseCell: function(data) {
+        if (data.section === 'body' && data.column.index === 6) {
+          // Color text for balance based on amount
+          if(data.cell.raw === 'Rs 0' || data.cell.raw === '-') data.cell.styles.textColor = [156, 163, 175];
+        }
+      },
+      styles: { fontSize: 8, cellPadding: 3 }
+    });
+    
+    // Add summary block at the end
+    const finalY = doc.lastAutoTable.finalY || 32;
+    if (finalY < doc.internal.pageSize.height - 30) {
+      doc.setFillColor(243, 244, 246);
+      doc.rect(14, finalY + 8, doc.internal.pageSize.width - 28, 16, 'F');
+      doc.setTextColor(31, 41, 55);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Total Records: ${body.length}`, 18, finalY + 18);
+      
+      const balSum = window._currentReportList.reduce((s,x)=>s+x.balance,0);
+      doc.setTextColor(220, 38, 38);
+      doc.text(`Total Outstanding: Rs ${balSum.toLocaleString()}`, doc.internal.pageSize.width - 70, finalY + 18);
+    }
+    
+    doc.save(`Outstanding_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+  };
+
+  window._clearRptFilters = function() {
+    ['report-search','rpt-filter-vendor','rpt-filter-status','rpt-filter-age','rpt-filter-date-from','rpt-filter-date-to'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const sortEl = document.getElementById('rpt-sort');
+    if (sortEl) sortEl.value = 'date-desc';
+    window.rptCurrentPage = 1;
+    renderRpt();
+  };
+
+  ['report-search','rpt-filter-vendor','rpt-filter-status','rpt-filter-age','rpt-sort','rpt-filter-date-from','rpt-filter-date-to'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', renderRpt);
+    document.getElementById(id)?.addEventListener('change', renderRpt);
+  });
+  document.getElementById('rpt-page-size')?.addEventListener('change', (e) => {
+    window.rptRowsPerPage = parseInt(e.target.value);
+    window.rptCurrentPage = 1;
+    renderRpt();
+  });
+
+  populateVendorFilter();
+  renderRpt();
+})();
+</script>

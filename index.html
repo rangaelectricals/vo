@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Outstanding Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'SF Pro', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.css" />
+  <link rel="stylesheet" href="assets/styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    .amt-prefix, .pay-prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.875rem; color: #94a3b8; user-select: none; pointer-events: none; z-index: 10; }
+    .amt-suffix, .pay-suffix { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 0.875rem; color: #94a3b8; user-select: none; pointer-events: none; z-index: 10; }
+  </style>
+</head>
+
+<body data-theme="corporate" class="bg-[#f3f4f6] min-h-screen text-slate-800">
+  <div id="layout-root">
+    <!-- Layout and pages will be loaded here by app.js -->
+  </div>
+
+  <script src="utils/dom.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+
+</html>

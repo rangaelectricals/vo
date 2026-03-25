@@ -1,0 +1,86 @@
+<dialog id="modal-payment" class="modal">
+  <div class="modal-box p-0 bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+    <div class="bg-gray-50/80 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+          <span class="material-icons text-sm">payments</span>
+        </div>
+        <h3 class="font-black text-gray-800 text-lg tracking-tight" id="payment-modal-title">Record Payment</h3>
+      </div>
+      <button type="button" class="text-gray-400 hover:text-gray-700 transition" onclick="document.getElementById('modal-payment').close()">
+        <span class="material-icons text-xl">close</span>
+      </button>
+    </div>
+    
+    <form id="payment-form">
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="payment-id" />
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">1. Select Vendor <span class="text-red-500">*</span></label>
+            <select class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium" id="payment-vendor" required>
+              <!-- Populated by app.js -->
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">2. Against Invoices <span class="text-[9px] text-gray-400 normal-case">(Select multiple)</span></label>
+            <div id="payment-invoice-container" class="w-full border border-gray-200 rounded-lg bg-gray-50/50 max-h-[140px] overflow-y-auto p-2 space-y-1">
+              <p class="text-[11px] text-gray-400 text-center py-4">Select a vendor first</p>
+            </div>
+            <div id="payment-invoice-summary" class="mt-1 text-[10px] font-bold text-emerald-600 hidden">
+               Selected Total: ₹ <span id="payment-invoice-selected-sum">0</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Payment Date <span class="text-red-500">*</span></label>
+            <input type="date" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" id="payment-date" required />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Amount Paid (₹) <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 font-bold">₹</span>
+              <input type="number" min="1" placeholder="0.00" class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm font-black text-emerald-600 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" id="payment-amount" required />
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Mode of Payment</label>
+            <select class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" id="payment-mode">
+              <option value="NEFT">NEFT</option>
+              <option value="IMPS">IMPS</option>
+              <option value="RTGS">RTGS</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Ref / Against</label>
+            <input type="text" placeholder="e.g. UTR Number" class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" id="payment-against" />
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Internal Remarks</label>
+          <textarea placeholder="Any additional notes..." class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none h-16" id="payment-remarks"></textarea>
+        </div>
+      </div>
+      
+      <div class="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 rounded-b-2xl">
+        <button type="button" class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-all" onclick="document.getElementById('modal-payment').close()">Cancel</button>
+        <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-2">
+          <span class="material-icons text-[16px]">save</span> Save Payment
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
