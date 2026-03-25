@@ -281,6 +281,21 @@
       return;
     }
 
+    window._expPages = window._expPages || {};
+    window._expandedVendors = window._expandedVendors || {};
+
+    window._changeExpPage = function(vendor, p) {
+      window._expPages[vendor] = p;
+      renderRpt();
+    };
+
+    window._toggleVendor = function(vendor) {
+      window._expandedVendors[vendor] = !window._expandedVendors[vendor];
+      renderRpt();
+    };
+
+    const pagCallbacks = [];
+
     const stCls = { paid:'bg-emerald-50 text-emerald-700 border-emerald-200', partial:'bg-amber-50 text-amber-700 border-amber-200', pending:'bg-red-50 text-red-700 border-red-200' };
     const stLabel = { paid:'Paid', partial:'Partial', pending:'Pending' };
     const rowBgCls = { paid:'bg-emerald-50/50 hover:bg-emerald-100/50', partial:'bg-amber-50/50 hover:bg-amber-100/50', pending:'bg-red-50/40 hover:bg-red-100/50' };
@@ -290,14 +305,20 @@
     paginatedGroups.forEach((grp, idx) => {
       const vSt = grp.balance <= 0 ? 'paid' : (grp.paid > 0 ? 'partial' : 'pending');
       const vid = (window.vendorList||[]).find(v=>v.name===grp.vendor)?.id;
+      const isExpanded = window._expandedVendors[grp.vendor] || false;
+      const subPage = window._expPages[grp.vendor] || 1;
+      const subLimit = 5;
+      const totalSubPages = Math.ceil(grp.invoices.length / subLimit);
+      const displayedInvoices = isExpanded ? grp.invoices.slice((subPage-1)*subLimit, (subPage-1)*subLimit + subLimit) : [];
+
       html += `
-        <tr class="bg-gray-100 hover:bg-gray-200 cursor-pointer font-bold border-y border-gray-300" onclick="const rr=document.querySelectorAll('.v-row-${idx}'); rr.forEach(e=>e.classList.toggle('hidden')); const icon=this.querySelector('.exp-icon'); if(icon) icon.textContent=rr[0].classList.contains('hidden')?'expand_more':'expand_less';">
-           <td class="py-4 px-4 text-center text-gray-500"><span class="material-icons text-[18px] exp-icon">expand_more</span></td>
+        <tr class="bg-gray-100 hover:bg-gray-200 transition-all cursor-pointer font-extrabold border-y border-gray-300" onclick="window._toggleVendor('${grp.vendor.replace(/'/g,"\\\\'")}')">
+           <td class="py-4 px-4 text-center text-gray-500"><span class="material-icons text-[20px] exp-icon ${isExpanded?'rotate-180':''} transition-transform">${isExpanded?'expand_less':'expand_more'}</span></td>
            <td colspan="3" class="py-4 px-4 text-[13px] text-blue-900 uppercase tracking-wide">
              <div class="flex items-center gap-3">
-               <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">${grp.vendor.charAt(0).toUpperCase()}</div>
-               ${grp.vendor} 
-               <span class="bg-blue-200 text-blue-800 text-[10px] px-2 py-0.5 rounded-full">${grp.invoices.length} Inv</span>
+               <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black shadow-sm">${grp.vendor.charAt(0).toUpperCase()}</div>
+               <span class="truncate max-w-[200px] xl:max-w-none">${grp.vendor}</span>
+               <span class="bg-blue-200 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-black">${grp.invoices.length} Inv</span>
              </div>
            </td>
            <td colspan="4" class="py-4 px-4 hidden xl:table-cell text-center"></td>
@@ -307,51 +328,71 @@
              <div class="text-[13px] ${grp.balance>0?'text-red-700':'text-gray-500'} font-black">₹${grp.balance.toLocaleString()}</div>
              ${grp.excess > 0 ? `<div class="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded shadow-sm border border-amber-100 ml-auto w-max mt-1">Cr: ₹${grp.excess.toLocaleString()}</div>` : ''}
            </td>
-           <td colspan="2" class="py-4 px-4 text-center"><span class="text-[10px] uppercase font-black px-2 py-1 rounded ${vSt==='paid'?'bg-emerald-200 text-emerald-800 border border-emerald-300':vSt==='partial'?'bg-amber-200 text-amber-800 border border-amber-300':'bg-red-200 text-red-800 border border-red-300'}">${vSt}</span></td>
-           <td colspan="2" class="py-4 px-4 text-center" onclick="event.stopPropagation()">
-              <button class="bg-white border rounded shadow-sm px-3 py-1.5 text-[11px] text-blue-700 hover:bg-blue-50 transition font-bold" onclick="window.goToVendorReportPage(${vid?vid:'null'})">Open Ledger</button>
+           <td colspan="1" class="py-4 px-4 text-center"><span class="text-[10px] uppercase font-black px-2 py-1 rounded shadow-sm ${vSt==='paid'?'bg-emerald-200 text-emerald-800 border border-emerald-300':vSt==='partial'?'bg-amber-200 text-amber-800 border border-amber-300':'bg-red-200 text-red-800 border border-red-300'}">${vSt}</span></td>
+           <td colspan="3" class="py-4 px-4 text-center" onclick="event.stopPropagation()">
+              <button class="bg-white border-2 border-blue-600 text-blue-700 rounded-xl shadow-sm px-4 py-1.5 text-[11px] hover:bg-blue-600 hover:text-white transition-all font-black" onclick="window.goToVendorReportPage(${vid?vid:'null'})">Intelligence Report</button>
            </td>
         </tr>
       `;
 
-      html += grp.invoices.map((r, subIdx) => {
-        const ageCls = r.ageing<=30 ? 'bg-emerald-50 text-emerald-600' : r.ageing<=60 ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600';
-        const dotCls = r.ageing<=30 ? 'bg-emerald-400' : r.ageing<=60 ? 'bg-orange-400' : 'bg-red-500';
-        return `<tr class="v-row-${idx} hidden ${rowBgCls[r.st] || 'bg-white hover:bg-gray-50'} transition-colors group cursor-pointer border-b border-gray-100/50" onclick="if(arguments[0].target.closest('button')||arguments[0].target.closest('td:last-child'))return;if(${vid?vid:'null'})window.goToVendorReportPage(${vid?vid:'null'})">
-          <td class="py-2.5 px-4 text-center text-gray-400 text-[11px] border-r border-gray-100/50">${subIdx+1}</td>
-          <td class="py-2.5 px-4 text-[11px] font-bold text-gray-700 whitespace-nowrap">
-            <span class="w-1.5 h-1.5 rounded-full inline-block mr-1 ${dotCls}"></span>
-            ${window.formatDate?window.formatDate(r.date):r.date}
-          </td>
-          <td class="py-2.5 px-4 text-[11px] italic text-gray-400 hidden xl:table-cell">↳ Linked</td>
-          <td class="py-2.5 px-4 font-bold text-blue-600 text-[12px]">${r.number}</td>
-          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.basic||0).toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.gst||0).toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.discount||0).toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.roundoff||0).toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right font-black text-gray-800 bg-blue-50/10">₹${r.total.toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">₹${r.paid.toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-right font-black ${r.balance>0?'text-red-500 bg-red-50/10':'text-gray-400'}">₹${r.balance.toLocaleString()}</td>
-          <td class="py-2.5 px-4 text-center">
-            ${r.balance <= 0 ? '<span class="text-gray-400 font-bold">—</span>' : `<span class="text-[10px] font-black px-2 py-1 rounded-lg ${ageCls}">${r.ageing}d</span>`}
-          </td>
-          <td class="py-2.5 px-4 text-center">
-            <span class="text-[10px] font-black px-2 py-0.5 rounded border ${stCls[r.st]}">${stLabel[r.st]}</span>
-          </td>
-          <td class="py-2.5 px-4 text-[9px]">
-            ${r.pRefsHtml || '<span class="text-gray-300 italic px-1">No Payments</span>'}
-          </td>
-          <td class="py-2.5 px-4 text-center" onclick="event.stopPropagation()">
-            <div class="flex gap-1 justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-              ${r.balance>0?`<button class="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 shadow-sm transition" onclick="window._editPaymentId=null;window._contextPaymentVendor='${r.vendor.replace(/'/g,"\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='report';window.location.hash='add-payment'" title="Record Payment"><span class='material-icons text-[13px]'>payments</span></button>`:''}
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    });
-    tbody.innerHTML = html;
+      if (isExpanded) {
+        html += displayedInvoices.map((r, subIdx) => {
+          const actualIdx = (subPage-1)*subLimit + subIdx + 1;
+          const ageCls = r.ageing<=30 ? 'bg-emerald-50 text-emerald-600' : r.ageing<=60 ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600';
+          const dotCls = r.ageing<=30 ? 'bg-emerald-400' : r.ageing<=60 ? 'bg-orange-400' : 'bg-red-500';
+          return `<tr class="v-row-${idx} ${rowBgCls[r.st] || 'bg-white hover:bg-gray-50'} transition-colors group cursor-pointer border-b border-gray-100/50" onclick="if(arguments[0].target.closest('button')||arguments[0].target.closest('td:last-child'))return;if(${vid?vid:'null'})window.goToVendorReportPage(${vid?vid:'null'})">
+            <td class="py-2.5 px-4 text-center text-gray-400 text-[11px] border-r border-gray-100/50">${actualIdx}</td>
+            <td class="py-2.5 px-4 text-[11px] font-bold text-gray-700 whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full inline-block mr-1 ${dotCls}"></span>
+              ${window.formatDate?window.formatDate(r.date):r.date}
+            </td>
+            <td class="py-2.5 px-4 text-[11px] italic text-gray-400 hidden xl:table-cell">↳ Linked to ${grp.vendor.slice(0,10)}...</td>
+            <td class="py-2.5 px-4 font-bold text-blue-600 text-[12px]">${r.number}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.basic||0).toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.gst||0).toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.discount||0).toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.roundoff||0).toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right font-black text-gray-800 bg-blue-50/10">₹${r.total.toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">₹${r.paid.toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right font-black ${r.balance>0?'text-red-500 bg-red-50/10':'text-gray-400'}">₹${r.balance.toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-center">
+              ${r.balance <= 0 ? '<span class="text-gray-400 font-bold">—</span>' : `<span class="text-[10px] font-black px-2 py-1 rounded-lg ${ageCls}">${r.ageing}d</span>`}
+            </td>
+            <td class="py-2.5 px-4 text-center">
+              <span class="text-[10px] font-black px-2 py-0.5 rounded border ${stCls[r.st]}">${stLabel[r.st]}</span>
+            </td>
+            <td class="py-2.5 px-4 text-[9px]">
+              ${r.pRefsHtml || '<span class="text-gray-300 italic px-1">No Payments</span>'}
+            </td>
+            <td class="py-2.5 px-4 text-center" onclick="event.stopPropagation()">
+              <div class="flex gap-1 justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                ${r.balance>0?`<button class="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 hover:bg-emerald-500 hover:text-white shadow-sm transition-all" onclick="window._editPaymentId=null;window._contextPaymentVendor='${grp.vendor.replace(/'/g,"\\\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='report';window.location.hash='add-payment'" title="Quick Pay"><span class='material-icons text-[14px]'>payments</span></button>`:''}
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
 
-    // Render exact image-matched Mobile Cards
+        if (totalSubPages > 1) {
+          const fnName = 'subPag' + idx;
+          window[fnName] = function(p) { window._changeExpPage(grp.vendor, p); };
+          html += `
+            <tr class="bg-gray-50/50">
+              <td colspan="15" class="py-2 px-8">
+                <div class="flex items-center justify-between gap-4 border-b border-gray-200 pb-2 mb-1">
+                  <div id="sub-pag-cont-${idx}" class="flex-shrink-0"></div>
+                  <div class="h-px bg-gray-200 flex-1 hidden md:block"></div>
+                  <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm font-sans">Page ${subPage} of ${totalSubPages} · ${grp.invoices.length} entries</span>
+                </div>
+              </td>
+            </tr>
+          `;
+          pagCallbacks.push(() => window.renderPaginationControls(subPage, totalSubPages, `sub-pag-cont-${idx}`, fnName));
+        }
+      }
+    });
+
+    tbody.innerHTML = html;
+    pagCallbacks.forEach(cb => cb());
     const cardGrid = document.getElementById('rep-card-grid');
     if (cardGrid) {
       cardGrid.innerHTML = paginatedGroups.map((grp, idx) => {

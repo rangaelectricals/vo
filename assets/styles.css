@@ -32,7 +32,7 @@ main, .container, .card, .glass-card, .premium-table {
 	font-family: inherit;
 }
 
-/* Card styles */
+/* ── Card styles ─────────────────────────────────────────────── */
 .card, .glass-card {
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-card);
@@ -47,7 +47,22 @@ main, .container, .card, .glass-card, .premium-table {
 	transform: translateY(-2px) scale(1.02);
 }
 
-/* Button styles */
+/* ── Glass card (duplicate explicit version for specificity) ─── */
+.glass-card {
+	background: rgba(255,255,255,0.18);
+	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 6px 0 rgba(0,0,0,0.08);
+	backdrop-filter: blur(12px) saturate(1.2);
+	-webkit-backdrop-filter: blur(12px) saturate(1.2);
+	border-radius: 1.25rem;
+	border: 1.5px solid rgba(255,255,255,0.25);
+	transition: box-shadow 0.2s, transform 0.2s;
+}
+.glass-card:hover {
+	box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.22), 0 3px 12px 0 rgba(0,0,0,0.12);
+	transform: translateY(-2px) scale(1.02);
+}
+
+/* ── Button styles ───────────────────────────────────────────── */
 .btn, .btn-primary, .btn-outline, .btn-success, .btn-error, .btn-secondary {
 	border-radius: var(--radius-md);
 	font-weight: 600;
@@ -77,7 +92,7 @@ main, .container, .card, .glass-card, .premium-table {
 	color: #fff;
 }
 
-/* Input styles */
+/* ── Input styles ────────────────────────────────────────────── */
 input, select, textarea {
 	border-radius: var(--radius-md);
 	border: 1.5px solid var(--color-border);
@@ -92,7 +107,7 @@ input:focus, select:focus, textarea:focus {
 	box-shadow: 0 0 0 2px #6366f1aa;
 }
 
-/* Badge styles */
+/* ── Badge styles ────────────────────────────────────────────── */
 .badge {
 	border-radius: 1em;
 	background: var(--color-primary-gradient);
@@ -102,7 +117,7 @@ input:focus, select:focus, textarea:focus {
 	font-size: 0.9em;
 }
 
-/* Table styles */
+/* ── Table styles ────────────────────────────────────────────── */
 .premium-table {
 	background: var(--color-card-glass);
 	box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
@@ -117,7 +132,7 @@ input:focus, select:focus, textarea:focus {
 	font-weight: 500;
 }
 
-/* Floating Action Button (FAB) */
+/* ── FAB ─────────────────────────────────────────────────────── */
 .fab {
 	position: fixed;
 	right: 2rem;
@@ -141,47 +156,52 @@ input:focus, select:focus, textarea:focus {
 	transform: scale(1.08);
 }
 
-/* Skeleton loader */
+/* ── Skeleton Loader — Premium Shimmer ───────────────────────── */
 .skeleton {
-	background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-	background-size: 200% 100%;
-	animation: skeleton-loading 1.2s infinite linear;
-	border-radius: var(--radius-md);
+	background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%);
+	background-size: 400% 100%;
+	animation: skeleton-shimmer 1.4s ease-in-out infinite;
+	border-radius: 0.75rem;
+	position: relative;
+	overflow: hidden;
 }
-@keyframes skeleton-loading {
-	0% { background-position: 200% 0; }
-	100% { background-position: -200% 0; }
+@keyframes skeleton-shimmer {
+	0%   { background-position: 100% 50%; }
+	100% { background-position: -100% 50%; }
 }
-/* Custom styles for Vendor Outstanding App */
-.glass-card {
-	background: rgba(255,255,255,0.18);
-	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 6px 0 rgba(0,0,0,0.08);
-	backdrop-filter: blur(12px) saturate(1.2);
-	-webkit-backdrop-filter: blur(12px) saturate(1.2);
-	border-radius: 1.25rem;
-	border: 1.5px solid rgba(255,255,255,0.25);
-	transition: box-shadow 0.2s, transform 0.2s;
+
+/* ── Input prefix / suffix overlays ─────────────────────────── */
+.amt-prefix, .pay-prefix {
+	position: absolute;
+	left: 1rem;
+	top: 50%;
+	transform: translateY(-50%);
+	font-weight: 800;
+	font-size: 0.875rem;
+	color: #94a3b8;
+	user-select: none;
+	pointer-events: none;
+	z-index: 10;
 }
-.glass-card:hover {
-	box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.22), 0 3px 12px 0 rgba(0,0,0,0.12);
-	transform: translateY(-2px) scale(1.02);
+.amt-suffix, .pay-suffix {
+	position: absolute;
+	right: 1rem;
+	top: 50%;
+	transform: translateY(-50%);
+	font-weight: 800;
+	font-size: 0.875rem;
+	color: #94a3b8;
+	user-select: none;
+	pointer-events: none;
+	z-index: 10;
 }
+
+/* ── Premium gradient background ────────────────────────────── */
 .premium-gradient {
 	background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
 }
-.premium-table {
-	background: rgba(255,255,255,0.22);
-	box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
-	border-radius: 1rem;
-	overflow: hidden;
-	backdrop-filter: blur(8px) saturate(1.1);
-	-webkit-backdrop-filter: blur(8px) saturate(1.1);
-}
-.premium-table th, .premium-table td {
-	background: rgba(255,255,255,0.12);
-	color: #222;
-	font-weight: 500;
-}
+
+/* ── Duplicate premium-btn (DaisyUI override layer) ─────────── */
 .premium-btn-primary {
 	background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
 	color: #fff;

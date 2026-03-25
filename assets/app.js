@@ -1,4 +1,4 @@
-// ── Toaster Notification ─────────────────────────────────
+﻿// â”€â”€ Toaster Notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.showToaster = function(message, type = 'success') {
   let toaster = document.getElementById('main-toaster');
   if (!toaster) {
@@ -17,7 +17,7 @@ window.showToaster = function(message, type = 'success') {
 //  Vendor Outstanding App — Main JS
 // ============================================================
 
-// ── Shared data — seeded once at startup ─────────────────────
+// â”€â”€ Shared data — seeded once at startup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.CONFIG = {
   USE_GOOGLE_SHEETS: true, // Google SDK integration is actively ENABLED
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxP3-LyhCYGTEtWmXFiC3TcHNq3hCrnQO9KonCNRZmrYVVg28S_qsetYX5sbj5U_I4XBQ/exec' // Paste your Google Apps Script Web App URL here
@@ -64,7 +64,7 @@ window.saveToDatabase = function (action, payload) {
   if (typeof window.buildAllocations === 'function') window.buildAllocations();
 };
 
-// ── GLOBAL PAYMENT ALLOCATION ENGINE ───────────────────────
+// â”€â”€ GLOBAL PAYMENT ALLOCATION ENGINE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.buildAllocations = function() {
   window._invPaidAllocations = {};
   window._invPaymentRefs = {};
@@ -133,7 +133,7 @@ window.getPaymentRefsForInvoice = function(invoiceNumber) {
   return window._invPaymentRefs[invoiceNumber] || [];
 };
 
-// ── Utility: populate a <select> from an array ──────────────
+// â”€â”€ Utility: populate a <select> from an array â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function populateDropdown(selectId, options, valueKey, labelKey) {
   const select = document.getElementById(selectId);
   if (!select) return;
@@ -292,7 +292,31 @@ window.loadPage = function (page) {
   }
 
   window.highlightNav(page);
-  
+
+  // â”€â”€ Inject shimmer skeleton matching the page shape â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const mc = document.getElementById('main-content');
+  const SKEL = {
+    _card: (h='h-24') => `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 ${h} skeleton"></div>`,
+    _row:  (cols=4)   => `<div class="grid grid-cols-${cols} gap-4">${Array(cols).fill('<div class="h-9 rounded-xl skeleton"></div>').join('')}</div>`,
+    _tableRows: (n=6) => Array(n).fill(`<div class="h-10 rounded-xl skeleton w-full"></div>`).join(''),
+    _kpi:  (n=4)      => `<div class="grid grid-cols-2 md:grid-cols-${n} gap-4">${Array(n).fill('<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 skeleton h-24"></div>').join('')}</div>`,
+    _header: ()       => `<div class="flex justify-between items-center"><div class="space-y-2"><div class="h-7 w-48 rounded-xl skeleton"></div><div class="h-4 w-36 rounded-lg skeleton"></div></div><div class="flex gap-2">${Array(3).fill('<div class="h-9 w-24 rounded-xl skeleton"></div>').join('')}</div></div>`,
+  };
+  const skeletons = {
+    dashboard:     `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${Array(4).fill('<div class="bg-white rounded-2xl p-5 h-28 skeleton border border-gray-100"></div>').join('')}</div>${SKEL._card('h-64')}<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${SKEL._card('h-48')}${SKEL._card('h-48')}</div></div>`,
+    vendors:       `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(4)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(6)}${SKEL._tableRows(8)}</div></div>`,
+    invoices:      `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(4)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(7)}${SKEL._tableRows(10)}</div></div>`,
+    payments:      `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(4)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(8)}${SKEL._tableRows(10)}</div></div>`,
+    report:        `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(4)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(5)}${SKEL._tableRows(12)}</div></div>`,
+    analytics:     `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(4)}<div class="grid grid-cols-1 md:grid-cols-2 gap-5">${SKEL._card('h-72')}${SKEL._card('h-72')}</div>${SKEL._card('h-48')}</div>`,
+    'add-invoice': `<div class="p-5 max-w-5xl mx-auto space-y-5 animate-pulse"><div class="h-16 rounded-2xl skeleton"></div><div class="grid grid-cols-1 xl:grid-cols-3 gap-5"><div class="xl:col-span-2 space-y-5">${SKEL._card('h-52')}${SKEL._card('h-72')}${SKEL._card('h-36')}${SKEL._card('h-16')}</div><div class="space-y-5">${SKEL._card('h-72')}${SKEL._card('h-52')}</div></div></div>`,
+    'add-payment': `<div class="p-5 max-w-5xl mx-auto space-y-5 animate-pulse"><div class="h-16 rounded-2xl skeleton"></div><div class="grid grid-cols-1 xl:grid-cols-3 gap-5"><div class="xl:col-span-2 space-y-5">${SKEL._card('h-48')}${SKEL._card('h-56')}${SKEL._card('h-64')}${SKEL._card('h-16')}</div><div class="space-y-5">${SKEL._card('h-64')}${SKEL._card('h-48')}</div></div></div>`,
+    'vendor-report':`<div class="p-5 space-y-5 animate-pulse"><div class="h-10 w-28 rounded-xl skeleton"></div><div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"><div class="h-40 skeleton m-4 rounded-xl"></div><div class="h-12 skeleton mx-4 mb-4 rounded-xl"></div></div>${SKEL._kpi(3)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(6)}${SKEL._tableRows(8)}</div></div>`,
+    users:         `<div class="p-5 space-y-5 animate-pulse">${SKEL._header()}${SKEL._kpi(3)}<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">${SKEL._row(5)}${SKEL._tableRows(6)}</div></div>`,
+  };
+
+  if (mc) mc.innerHTML = skeletons[page] || skeletons['dashboard'];
+
   loadHTML('main-content', pageFile, function () {
     if (pageInit) pageInit();
   });
@@ -300,7 +324,7 @@ window.loadPage = function (page) {
 
 
 
-// ── Auth helpers ─────────────────────────────────────────────
+// â”€â”€ Auth helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.getSession = function() {
   try { return JSON.parse(localStorage.getItem('_vapp_user')); } catch { return null; }
 };
@@ -456,7 +480,7 @@ function _bootMainApp() {
   });
 }
 
-// ── Bootstrap ────────────────────────────────────────────────
+// â”€â”€ Bootstrap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener('DOMContentLoaded', function () {
   console.log('[APP] Initializing...');
   const session = window.getSession();
@@ -745,7 +769,7 @@ function dashboardInit() {
               <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0 shadow-sm" style="background:${c1}">!</div>
               <div class="flex-1 min-w-0">
                 <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${inv.vendor}</p>
-                <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${inv.number} • ${window.formatDate(inv.date)}</p>
+                <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${inv.number} â€¢ ${window.formatDate(inv.date)}</p>
               </div>
               <span class="text-[10px] font-black px-2.5 py-1 ${ageCls} rounded-lg shadow-sm border border-transparent whitespace-nowrap">${band}</span>
             </div>
@@ -1001,7 +1025,7 @@ function vendorModalInit() {
 
 
 function invoiceModalInit() {
-  // ── REPLACED BY PAGE-BASED NAVIGATION ──
+  // â”€â”€ REPLACED BY PAGE-BASED NAVIGATION â”€â”€
   // OpenInvoiceModal now navigates to add-invoice page
   window.openInvoiceModal = function (returnPage) {
     window._editInvoiceId     = null;
@@ -1036,7 +1060,7 @@ function invoiceModalInit() {
 
 
 function paymentModalInit() {
-  // ── REPLACED BY PAGE-BASED NAVIGATION ──
+  // â”€â”€ REPLACED BY PAGE-BASED NAVIGATION â”€â”€
   // openPaymentModal now navigates to add-payment page
   window.openPaymentModal = function (returnPage) {
     window._editPaymentId        = null;
@@ -1283,7 +1307,7 @@ function vendorReportPageInit() {
         <td class="py-2.5 px-4 text-center text-gray-400 font-medium text-[11px]">${i + 1}</td>
         <td class="py-2.5 px-4 text-gray-800 font-medium whitespace-nowrap text-[11px]">${window.formatDate(inv.date)}</td>
         <td class="py-2.5 px-4 font-black text-blue-600 text-[12px]">${inv.number}</td>
-        <td class="py-2.5 px-4 text-[10px] text-gray-400 hidden xl:table-cell">${inv.category||'–'}</td>
+        <td class="py-2.5 px-4 text-[10px] text-gray-400 hidden xl:table-cell">${inv.category||'—'}</td>
         <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹ ${(inv.basic || 0).toLocaleString()}</td>
         <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹ ${(inv.gst || 0).toLocaleString()}</td>
         <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹ ${(inv.discount || 0).toLocaleString()}</td>
@@ -1326,7 +1350,7 @@ function vendorReportPageInit() {
             <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0 shadow-sm" style="background:#3b82f6">I</div>
             <div class="flex-1 min-w-0">
               <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${inv.number}</p>
-              <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${window.formatDate(inv.date)} • ${inv.category||'General'}</p>
+              <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${window.formatDate(inv.date)} â€¢ ${inv.category||'General'}</p>
             </div>
             <span class="text-[10px] font-black px-2.5 py-1 rounded-lg ${st[0]} shadow-sm">${st[1]}</span>
           </div>
@@ -1417,11 +1441,11 @@ function vendorReportPageInit() {
             </div>
             <div class="bg-blue-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-blue-50">
               <p class="text-[9px] text-blue-500 font-black uppercase tracking-widest mb-0.5">REF/UTR</p>
-              <p class="text-[11px] font-bold text-blue-700 truncate w-full text-center">${p.against||'–'}</p>
+              <p class="text-[11px] font-bold text-blue-700 truncate w-full text-center">${p.against||'—'}</p>
             </div>
             <div class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-gray-100/50">
               <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-0.5">BANK</p>
-              <p class="text-[11px] font-bold text-gray-800 truncate w-full text-center">${p.bank||'–'}</p>
+              <p class="text-[11px] font-bold text-gray-800 truncate w-full text-center">${p.bank||'—'}</p>
             </div>
           </div>
           <div class="flex gap-2 w-full ml-1 pr-1">
@@ -1612,301 +1636,374 @@ window.exportVendorReport = function() {
 window.analyticsPageInit = function() {
   const invoices = window.invoiceList || [];
   const payments = window.paymentList || [];
-  const vendors = window.vendorList || [];
-  const today = new Date();
+  const vendors  = window.vendorList  || [];
+  const today    = new Date();
+  const tab      = window._anlytActiveTab || 'overview';
+  const period   = parseInt(document.getElementById('analytics-period')?.value || '6');
 
-  let totalInv = 0, totalPaid = 0, totalOut = 0, totalOvr = 0;
-  let age30 = 0, age60 = 0, age90 = 0;
+  if (typeof window.buildAllocations === 'function') window.buildAllocations();
+
+  // ── Shared computations (fast, always run) ──────────────────
+  const fmt = n => '₹' + (n||0).toLocaleString();
+  const set = (id, v) => { const e = document.getElementById(id); if(e) e.innerText = v; };
+
+  let tInv=0, tPaid=0, tOut=0, tOvr=0;
+  let age30=0,age60=0,age90=0, a30c=0,a60c=0,a90c=0;
+  let settled=0, partial=0, pending=0;
 
   invoices.forEach(inv => {
-    // CORRECT: multi-invoice payment split-includes matching
-    const paid = payments
-      .filter(p => p.vendor === inv.vendor &&
-        String(p.invoiceNumber || '').split(',').map(x => x.trim()).includes(String(inv.number)))
-      .reduce((s, p) => s + p.amount, 0);
-    const balance = inv.total - paid;
-    totalInv += inv.total;
-    if (paid > 0) totalPaid += paid;
-    totalOut += balance;
-
-    if (balance > 0) {
-      const ageing = Math.floor((today - new Date(inv.date)) / 86400000);
-      if (ageing <= 30) age30 += balance;
-      else if (ageing <= 60) age60 += balance;
-      else {
-        age90 += balance;
-        totalOvr += balance;
-      }
+    const rp  = window.getPaidAmountForInvoice ? window.getPaidAmountForInvoice(inv.number) : 0;
+    const paid= Math.min(inv.total, rp);
+    const bal = Math.max(0, inv.total - rp);
+    tInv += inv.total; tPaid += paid; tOut += bal;
+    if (bal <= 0) settled++;
+    else if (paid > 0) { partial++; }
+    else pending++;
+    if (bal > 0) {
+      const age = Math.floor((today - new Date(inv.date)) / 86400000);
+      if (age <= 30) { age30 += bal; a30c++; }
+      else if (age <= 60) { age60 += bal; a60c++; }
+      else { age90 += bal; a90c++; tOvr += bal; }
     }
   });
 
-  const domGlobalInv  = document.getElementById('analytics-global-inv');
-  const domGlobalPaid = document.getElementById('analytics-global-paid');
-  const domGlobalOut  = document.getElementById('analytics-global-out');
-  const domGlobalOvr  = document.getElementById('analytics-global-ovr');
-
-  if (domGlobalInv)  domGlobalInv.innerText  = '₹' + totalInv.toLocaleString();
-  if (domGlobalPaid) domGlobalPaid.innerText = '₹' + totalPaid.toLocaleString();
-  if (domGlobalOut)  domGlobalOut.innerText  = '₹' + totalOut.toLocaleString();
-  if (domGlobalOvr)  domGlobalOvr.innerText  = '₹' + totalOvr.toLocaleString();
-
-  // Active vendors KPI (vendors with outstanding balance > 0)
-  const activeVendors = (vendors || []).filter(v => {
-    const tInv = invoices.filter(i => i.vendor === v.name).reduce((s,i) => s+i.total, 0);
-    const tPay = payments.filter(p => p.vendor === v.name).reduce((s,p) => s+p.amount, 0);
-    return (tInv - tPay) > 0;
+  const excess     = Object.values(window._excessPayments||{}).reduce((s,v)=>s+v,0);
+  const openCount  = partial + pending;
+  const ratio      = tInv > 0 ? Math.round((tPaid/tInv)*100) : 0;
+  let dSum=0, vPays=0;
+  payments.forEach(p => {
+    const fn = String(p.invoiceNumber||'').split(',')[0].trim();
+    const inv = invoices.find(i => String(i.number).trim()===fn && i.vendor===p.vendor);
+    if(inv) { const d=Math.floor((new Date(p.date)-new Date(inv.date))/86400000); if(d>=0){dSum+=d;vPays++;} }
+  });
+  const avgDays = vPays>0 ? Math.round(dSum/vPays) : 0;
+  const activeV = vendors.filter(v=>{
+    const tI=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+i.total,0);
+    const tP=payments.filter(p=>p.vendor===v.name).reduce((s,p)=>s+p.amount,0);
+    return(tI-tP)>0;
   }).length;
-  const domActiveV = document.getElementById('analytics-active-vendors');
-  if (domActiveV) domActiveV.innerText = activeVendors;
 
-  // Ageing values
-  const domAge30 = document.getElementById('age-30-val');
-  const domAge60 = document.getElementById('age-60-val');
-  const domAge90 = document.getElementById('age-90-val');
-  if (domAge30) domAge30.innerText = '₹' + age30.toLocaleString();
-  if (domAge60) domAge60.innerText = '₹' + age60.toLocaleString();
-  if (domAge90) domAge90.innerText = '₹' + age90.toLocaleString();
-
-  // Ageing progress bars (proportional width relative to totalOut)
-  const ageTotal = age30 + age60 + age90;
-  ['30','60','90'].forEach(n => {
-    const bar = document.getElementById('age-' + n + '-bar');
-    if (bar && ageTotal > 0) {
-      const val = n==='30' ? age30 : n==='60' ? age60 : age90;
-      bar.style.width = Math.round((val / ageTotal) * 100) + '%';
+  // ── Monthly arrays (shared) ──────────────────────────────
+  const mNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const mLabels=[],mInv=[],mPay=[];
+  for(let i=period-1;i>=0;i--){
+    let d=new Date(today); d.setDate(1); d.setMonth(d.getMonth()-i);
+    mLabels.push(mNames[d.getMonth()]+"'"+(d.getFullYear()%100));
+    mInv.push(0); mPay.push(0);
+  }
+  invoices.forEach(inv=>{
+    const d=new Date(inv.date); d.setDate(1);
+    for(let i=0;i<period;i++){
+      const r=new Date(today); r.setDate(1); r.setMonth(r.getMonth()-(period-1-i));
+      if(d.getMonth()===r.getMonth()&&d.getFullYear()===r.getFullYear()) mInv[i]+=inv.total;
+    }
+  });
+  payments.forEach(p=>{
+    const d=new Date(p.date); d.setDate(1);
+    for(let i=0;i<period;i++){
+      const r=new Date(today); r.setDate(1); r.setMonth(r.getMonth()-(period-1-i));
+      if(d.getMonth()===r.getMonth()&&d.getFullYear()===r.getFullYear()) mPay[i]+=p.amount;
     }
   });
 
-  // Behavior Metrics
-  const domAvgDays = document.getElementById('analytics-avg-days');
-  const domRatio = document.getElementById('analytics-payment-ratio');
-  
-  if (domRatio) {
-    const ratio = totalInv > 0 ? Math.round((totalPaid / totalInv) * 100) : 0;
-    domRatio.innerText = ratio + '%';
+  // Helper: safe chart destroy + create
+  const mkChart = (key, canvas, cfg) => {
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (window[key]) { try{window[key].destroy();}catch{} }
+    window[key] = new Chart(canvas, cfg);
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // ① OVERVIEW TAB
+  // ─────────────────────────────────────────────────────────────
+  if (tab === 'overview') {
+    set('ov-global-inv', fmt(tInv)); set('ov-inv-count', invoices.length+' invoices');
+    set('ov-global-paid', fmt(tPaid)); set('ov-pay-count', payments.length+' payments');
+    set('ov-global-out', fmt(tOut)); set('ov-out-count', openCount+' open');
+    set('ov-global-ovr', fmt(tOvr));
+    set('ov-ratio', ratio+'%'); set('ov-avgdays', avgDays+'d');
+    set('ov-active-v', activeV); set('ov-settled', settled);
+    set('ov-excess', fmt(excess));
+    set('ov-age30', fmt(age30)); set('ov-age30cnt', a30c+' invoices');
+    set('ov-age60', fmt(age60)); set('ov-age60cnt', a60c+' invoices');
+    set('ov-age90', fmt(age90)); set('ov-age90cnt', a90c+' invoices');
+    const ageT = age30+age60+age90;
+    ['30','60','90'].forEach(n=>{
+      const bar=document.getElementById('ov-age'+n+'bar');
+      if(bar&&ageT>0){ const v=n==='30'?age30:n==='60'?age60:age90; setTimeout(()=>bar.style.width=Math.round((v/ageT)*100)+'%',80); }
+    });
+
+    // Ageing doughnut
+    mkChart('_ovAgeChart', document.getElementById('ov-ageing-chart'), {
+      type:'doughnut',
+      data:{ labels:['0–30d','31–60d','60+d'], datasets:[{data:[age30,age60,age90],backgroundColor:['#10b981','#f97316','#ef4444'],borderWidth:2,borderColor:'#fff'}] },
+      options:{ responsive:true,maintainAspectRatio:false,cutout:'60%', plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:10}}}} }
+    });
+    // Invoice status
+    mkChart('_ovStatusChart', document.getElementById('ov-status-chart'), {
+      type:'doughnut',
+      data:{ labels:['Paid','Partial','Pending'], datasets:[{data:[settled,partial,pending],backgroundColor:['#10b981','#f59e0b','#ef4444'],borderWidth:2,borderColor:'#fff'}] },
+      options:{ responsive:true,maintainAspectRatio:false,cutout:'60%', plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:10}}}} }
+    });
+    // Payment modes horizontal bar
+    const modes={};
+    payments.forEach(p=>{ const m=p.mode||'Unknown'; modes[m]=(modes[m]||0)+p.amount; });
+    mkChart('_ovModeChart', document.getElementById('ov-mode-chart'), {
+      type:'bar',
+      data:{ labels:Object.keys(modes), datasets:[{data:Object.values(modes),backgroundColor:['#6366f1','#eab308','#ec4899','#14b8a6','#8b5cf6','#f97316'],borderRadius:6,borderSkipped:false}] },
+      options:{ indexAxis:'y',responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#f1f5f9'}}} }
+    });
+
+    // Recent activity
+    const actEl=document.getElementById('ov-activity');
+    if(actEl){
+      const acts=[
+        ...invoices.map(i=>({date:new Date(i.date),type:'inv',label:`Invoice ${i.number}`,sub:i.vendor,amt:i.total,col:'#6366f1'})),
+        ...payments.map(p=>({date:new Date(p.date),type:'pay',label:`Paid — ${p.mode||'NEFT'}`,sub:p.vendor,amt:p.amount,col:'#10b981'}))
+      ].sort((a,b)=>b.date-a.date).slice(0,10);
+      actEl.innerHTML=acts.length?acts.map(a=>`
+        <div class="flex items-center gap-2.5 py-1.5 border-b border-gray-50 last:border-0">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="background:${a.col}22">
+            <span class="material-icons text-[13px]" style="color:${a.col}">${a.type==='inv'?'receipt_long':'payments'}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[11px] font-bold text-gray-700 truncate">${a.label}</p>
+            <p class="text-[9px] text-gray-400">${a.sub} · ${window.formatDate?window.formatDate(a.date):''}</p>
+          </div>
+          <span class="text-[11px] font-black flex-shrink-0" style="color:${a.col}">${a.type==='inv'?'-':'+'} ₹${a.amt.toLocaleString()}</span>
+        </div>`).join(''):'<p class="text-center text-gray-400 text-xs py-4">No activity yet.</p>';
+    }
+    // Top vendors
+    const tvEl=document.getElementById('ov-top-vendors');
+    if(tvEl){
+      const cols=['#6366f1','#10b981','#f97316','#ec4899','#8b5cf6'];
+      const tv=vendors.map(v=>{
+        const ti=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+i.total,0);
+        const tp=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+Math.min(i.total,(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i.number):0)),0);
+        return{name:v.name,total:ti,paid:tp,balance:Math.max(0,ti-tp)};
+      }).filter(v=>v.total>0).sort((a,b)=>b.total-a.total).slice(0,5);
+      tvEl.innerHTML=tv.length?tv.map((v,i)=>{const pct=Math.round((v.paid/v.total)*100);return`
+        <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+          <div class="w-6 h-6 rounded-full text-white font-black text-[10px] flex items-center justify-center flex-shrink-0" style="background:${cols[i]}">${i+1}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-700 truncate">${v.name}</span><span class="text-[10px] font-black text-gray-700">₹${v.total.toLocaleString()}</span></div>
+            <div class="h-1 bg-gray-100 rounded-full mt-1 overflow-hidden"><div class="h-full rounded-full" style="width:${pct}%;background:${cols[i]}"></div></div>
+            <div class="flex justify-between mt-0.5"><span class="text-[9px] text-emerald-500">${pct}% settled</span><span class="text-[9px] text-red-400">₹${v.balance.toLocaleString()} due</span></div>
+          </div>
+        </div>`;}).join(''):'<p class="text-center text-gray-400 text-xs py-4">No vendor data.</p>';
+    }
+
+    // Update timestamp
+    set('anlyt-last-updated', 'Updated '+mNames[today.getMonth()]+' '+today.getDate());
   }
 
-  if (domAvgDays) {
-    // CORRECT: for each payment find the FIRST invoice it references and compute days
-    let exactDaysSum = 0;
-    let validPays = 0;
-    payments.forEach(p => {
-      // Get first invoice number from comma-separated list
-      const firstNum = String(p.invoiceNumber || '').split(',')[0].trim();
-      const inv = invoices.find(i => String(i.number).trim() === firstNum && i.vendor === p.vendor);
-      if (inv) {
-        const pd = new Date(p.date);
-        const id = new Date(inv.date);
-        const days = Math.floor((pd - id) / 86400000);
-        if (days >= 0) {
-          exactDaysSum += days;
-          validPays++;
-        }
+  // ─────────────────────────────────────────────────────────────
+  // ② CASHFLOW TAB
+  // ─────────────────────────────────────────────────────────────
+  if (tab === 'cashflow') {
+    const mAvgInv = period>0 ? Math.round(mInv.reduce((s,v)=>s+v,0)/period) : 0;
+    const mAvgPay = period>0 ? Math.round(mPay.reduce((s,v)=>s+v,0)/period) : 0;
+    const deficit = Math.max(0, tInv - tPaid);
+    const maxPay  = payments.reduce((mx,p) => p.amount>mx.amount?p:mx, {amount:0,vendor:''});
+    set('cf-avg-inv', fmt(mAvgInv)); set('cf-avg-pay', fmt(mAvgPay));
+    set('cf-deficit', fmt(deficit));
+    set('cf-max-pay', fmt(maxPay.amount)); set('cf-max-pay-v', maxPay.vendor||'—');
+
+    const mBal = mInv.map((v,i)=>Math.max(0,v-mPay[i]));
+    // Bar chart: invoiced vs paid vs balance
+    mkChart('_cfBarChart', document.getElementById('cf-bar-chart'), {
+      type:'bar',
+      data:{ labels:mLabels, datasets:[
+        {label:'Invoiced',data:mInv,backgroundColor:'rgba(99,102,241,.7)',borderRadius:6,borderSkipped:false},
+        {label:'Paid',data:mPay,backgroundColor:'rgba(16,185,129,.7)',borderRadius:6,borderSkipped:false},
+        {label:'Net Balance',data:mBal,backgroundColor:'rgba(251,146,60,.7)',borderRadius:6,borderSkipped:false}
+      ]},
+      options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:10}}}}, scales:{y:{ticks:{callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#f1f5f9'}}} }
+    });
+    // Cumulative line
+    let rb=0; const cumInv=mInv.map(v=>{rb+=v;return rb;}); rb=0;
+    const cumPay=mPay.map(v=>{rb+=v;return rb;});
+    const cumOut=cumInv.map((v,i)=>Math.max(0,v-cumPay[i]));
+    mkChart('_cfLineChart', document.getElementById('cf-line-chart'), {
+      type:'line',
+      data:{ labels:mLabels, datasets:[
+        {label:'Cumulative Billed',data:cumInv,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.07)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#ef4444'},
+        {label:'Cumulative Paid',data:cumPay,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.07)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#10b981'},
+        {label:'Outstanding',data:cumOut,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.07)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f97316',borderDash:[5,3]}
+      ]},
+      options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:10}}}}, scales:{y:{ticks:{callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#f1f5f9'}}} }
+    });
+    // Heatmap (months × payment count)
+    const hm=document.getElementById('cf-heatmap');
+    if(hm){
+      const monthCounts={};
+      payments.forEach(p=>{const d=new Date(p.date);const key=d.getFullYear()+'-'+(d.getMonth()+1);monthCounts[key]=(monthCounts[key]||0)+1;});
+      const maxCnt=Math.max(1,...Object.values(monthCounts));
+      const cells=[];
+      for(let i=period-1;i>=0;i--){
+        const d=new Date(today); d.setDate(1); d.setMonth(d.getMonth()-i);
+        const key=d.getFullYear()+'-'+(d.getMonth()+1);
+        const cnt=monthCounts[key]||0;
+        const pct=cnt/maxCnt;
+        const bg=pct===0?'#f1f5f9':pct<.25?'#c7d2fe':pct<.5?'#818cf8':pct<.75?'#6366f1':'#3730a3';
+        cells.push(`<div class="flex flex-col items-center gap-0.5" title="${mNames[d.getMonth()]} ${d.getFullYear()}: ${cnt} payments"><div class="w-10 h-10 rounded-lg shadow-sm" style="background:${bg}"></div><p class="text-[8px] text-gray-500 font-bold">${mNames[d.getMonth()].slice(0,3)}</p>${cnt?`<p class="text-[8px] font-black text-indigo-600">${cnt}</p>`:'<p class="text-[8px] text-gray-300">—</p>'}</div>`);
       }
-    });
-    const avg = validPays > 0 ? Math.round(exactDaysSum / validPays) : 0;
-    domAvgDays.innerText = avg + ' Days';
+      hm.innerHTML=cells.join('');
+    }
   }
 
-  // Payment Modes Doughnut Chart
-  const ctxMode = document.getElementById('paymentModeChart');
-  if (ctxMode && typeof Chart !== 'undefined') {
-    const modes = {};
-    payments.forEach(p => {
-      let m = p.mode || 'Unknown';
-      if(!m) m = 'Unknown';
-      modes[m] = (modes[m] || 0) + p.amount;
-    });
-    
-    if (window.modeChartInst) window.modeChartInst.destroy();
-    window.modeChartInst = new Chart(ctxMode, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(modes),
-        datasets: [{
-          data: Object.values(modes),
-          backgroundColor: ['#6366f1', '#eab308', '#ec4899', '#14b8a6', '#8b5cf6'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }
-      }
+  // ─────────────────────────────────────────────────────────────
+  // ③ VENDORS TAB
+  // ─────────────────────────────────────────────────────────────
+  if (tab === 'vendors') {
+    window._anlytFilterVendors();
+    const vRisk=vendors.map(v=>{
+      const ti=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+i.total,0);
+      const tp=payments.filter(p=>p.vendor===v.name).reduce((s,p)=>s+p.amount,0);
+      return{name:v.name,invoiced:ti,paid:tp,balance:Math.max(0,ti-tp)};
+    }).filter(v=>v.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,8);
+
+    mkChart('_vdConChart', document.getElementById('vd-concentration-chart'), {
+      type:'bar',
+      data:{ labels:vRisk.map(v=>v.name.length>15?v.name.slice(0,15)+'…':v.name), datasets:[
+        {label:'Invoiced',data:vRisk.map(v=>v.invoiced),backgroundColor:'rgba(99,102,241,.6)',borderRadius:4,borderSkipped:false},
+        {label:'Balance Due',data:vRisk.map(v=>v.balance),backgroundColor:'rgba(239,68,68,.7)',borderRadius:4,borderSkipped:false}
+      ]},
+      options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:10}}}}, scales:{y:{ticks:{callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#f1f5f9'}}}}
     });
   }
 
-  // Critical Singular Invoices Table
-  const criticalInvoicesBody = document.getElementById('critical-invoices-body');
-  if(criticalInvoicesBody) {
-    const critInvs = invoices.map(inv => {
-      // CORRECT: split-includes matching for multi-invoice payments
-      const paid = payments
-        .filter(p => p.vendor === inv.vendor &&
-          String(p.invoiceNumber || '').split(',').map(x => x.trim()).includes(String(inv.number)))
-        .reduce((s, p) => s + p.amount, 0);
-      const balance = inv.total - paid;
-      const ageing = Math.floor((today - new Date(inv.date)) / 86400000);
-      return { ...inv, balance, ageing };
-    }).filter(inv => inv.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
+  // ─────────────────────────────────────────────────────────────
+  // ④ INVOICES TAB
+  // ─────────────────────────────────────────────────────────────
+  if (tab === 'invoices') {
+    const tot=invoices.length;
+    set('inv-total-count',tot);
+    set('inv-paid-count',settled); set('inv-paid-pct',tot>0?Math.round(settled/tot*100)+'%':'0%');
+    set('inv-partial-count',partial); set('inv-partial-pct',tot>0?Math.round(partial/tot*100)+'%':'0%');
+    set('inv-pending-count',pending); set('inv-pending-pct',tot>0?Math.round(pending/tot*100)+'%':'0%');
 
-    if (critInvs.length === 0) {
-      criticalInvoicesBody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-gray-400 font-medium">No critical invoices found.</td></tr>';
-    } else {
-      criticalInvoicesBody.innerHTML = critInvs.map(inv => `
+    // Category list
+    const catEl=document.getElementById('inv-category-list');
+    const cats={};
+    invoices.forEach(inv=>{
+      const cat=inv.category||'Uncategorized';
+      if(!cats[cat]) cats[cat]={total:0,balance:0,count:0};
+      const bal=Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0));
+      cats[cat].total+=inv.total; cats[cat].balance+=bal; cats[cat].count++;
+    });
+    const catColors=['#6366f1','#10b981','#f97316','#ec4899','#8b5cf6','#eab308','#14b8a6','#ef4444'];
+    const sorted=Object.entries(cats).sort((a,b)=>b[1].balance-a[1].balance);
+    const maxCatBal=sorted[0]?.[1].balance||1;
+    if(catEl) catEl.innerHTML=sorted.map(([cat,d],idx)=>`
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${catColors[idx%catColors.length]}"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between mb-1"><span class="text-[11px] font-bold text-gray-700 truncate">${cat}</span><span class="text-[10px] font-black text-gray-600">₹${d.balance.toLocaleString()}</span></div>
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full cat-bar-fill" style="width:${Math.round((d.balance/maxCatBal)*100)}%;background:${catColors[idx%catColors.length]}"></div></div>
+          <div class="flex justify-between mt-0.5"><span class="text-[9px] text-gray-400">${d.count} inv</span><span class="text-[9px] text-gray-400">₹${d.total.toLocaleString()} total</span></div>
+        </div>
+      </div>`).join('')||'<p class="text-gray-400 text-xs py-2">No category data.</p>';
+
+    // Category doughnut
+    mkChart('_invCatChart', document.getElementById('inv-cat-chart'), {
+      type:'doughnut',
+      data:{ labels:sorted.map(([c])=>c), datasets:[{data:sorted.map(([,d])=>d.balance),backgroundColor:catColors,borderWidth:2,borderColor:'#fff'}] },
+      options:{ responsive:true,maintainAspectRatio:false,cutout:'50%', plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:9}}}} }
+    });
+
+    // Critical invoices table
+    const critEl=document.getElementById('inv-critical-body');
+    if(critEl){
+      const crits=invoices.map(inv=>{
+        const rp=window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0;
+        const bal=Math.max(0,inv.total-rp);
+        const age=Math.floor((today-new Date(inv.date))/86400000);
+        return{...inv,balance:bal,ageing:age};
+      }).filter(inv=>inv.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,12);
+      critEl.innerHTML=crits.length?crits.map(inv=>`
         <tr class="hover:bg-red-50/20 transition-colors">
-          <td class="py-2 px-3 font-bold text-blue-600">${inv.number}</td>
-          <td class="py-2 px-3 font-semibold text-gray-700">${inv.vendor}</td>
-          <td class="py-2 px-3 text-right font-medium text-gray-600">₹ ${inv.total.toLocaleString()}</td>
-          <td class="py-2 px-3 text-center">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${inv.ageing > 60 ? 'bg-red-100 text-red-600' : inv.ageing > 30 ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}">${inv.ageing}d</span>
-          </td>
-          <td class="py-2 px-3 text-right font-black text-red-600">₹ ${inv.balance.toLocaleString()}</td>
-          <td class="py-2 px-3 text-center">
-            <button class="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded hover:bg-emerald-100 transition"
-              onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor}';window._lockPaymentVendor=true;window._paymentReturnPage='analytics';window.location.hash='add-payment'">Pay</button>
-          </td>
-        </tr>
-      `).join('');
+          <td class="py-2 px-4 font-bold text-blue-600">${inv.number}</td>
+          <td class="py-2 px-4 text-gray-700 font-semibold">${inv.vendor}</td>
+          <td class="py-2 px-4"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">${inv.category||'—'}</span></td>
+          <td class="py-2 px-4 text-right font-medium text-gray-600">₹${inv.total.toLocaleString()}</td>
+          <td class="py-2 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${inv.ageing>60?'bg-red-100 text-red-600':inv.ageing>30?'bg-orange-100 text-orange-600':'bg-emerald-100 text-emerald-600'}">${inv.ageing}d</span></td>
+          <td class="py-2 px-4 text-right font-black text-red-600">₹${inv.balance.toLocaleString()}</td>
+          <td class="py-2 px-4 text-center"><button class="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded hover:bg-emerald-100 transition" onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor}';window._lockPaymentVendor=true;window._paymentReturnPage='analytics';window.location.hash='add-payment'">Pay</button></td>
+        </tr>`).join(''):'<tr><td colspan="7" class="text-center py-6 text-gray-400">No outstanding invoices.</td></tr>';
     }
   }
 
-  // Ageing Matrix Pie Chart
-  const ctxAgeing = document.getElementById('ageingMatrixChart');
-  if (ctxAgeing && typeof Chart !== 'undefined') {
-    if (window.ageingChartInst) window.ageingChartInst.destroy();
-    window.ageingChartInst = new Chart(ctxAgeing, {
-      type: 'pie',
-      data: {
-        labels: ['0-30 Days', '31-60 Days', '60+ Days Critical'],
-        datasets: [{
-          data: [age30, age60, age90],
-          backgroundColor: ['#10b981', '#f97316', '#ef4444'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }
-      }
-    });
-  }
+  // ─────────────────────────────────────────────────────────────
+  // ⑤ RISK TAB
+  // ─────────────────────────────────────────────────────────────
+  if (tab === 'risk') {
+    const vRisk=vendors.map(v=>{
+      const ti=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+i.total,0);
+      const tp=payments.filter(p=>p.vendor===v.name).reduce((s,p)=>s+p.amount,0);
+      const cnt=invoices.filter(i=>i.vendor===v.name).length;
+      const odInvs=invoices.filter(i=>i.vendor===v.name&&Math.floor((today-new Date(i.date))/86400000)>30);
+      const odBal=odInvs.reduce((s,i)=>s+Math.max(0,i.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i.number):0)),0);
+      return{name:v.name,invoiced:ti,paid:tp,balance:Math.max(0,ti-tp),count:cnt,odBal,pct:ti>0?Math.round((Math.max(0,ti-tp)/ti)*100):0};
+    }).filter(v=>v.balance>0).sort((a,b)=>b.balance-a.balance);
 
-  // Velocity Line Chart - 6 Months History
-  const ctxVelocity = document.getElementById('velocityLineChart');
-  if (ctxVelocity && typeof Chart !== 'undefined') {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthlyInv = [0, 0, 0, 0, 0, 0];
-    const monthlyPay = [0, 0, 0, 0, 0, 0];
-    const labels = [];
-    
-    for (let i = 5; i >= 0; i--) {
-      let d = new Date(today);
-      d.setMonth(d.getMonth() - i);
-      labels.push(monthNames[d.getMonth()]);
-    }
-    
-    invoices.forEach(inv => {
-      let d = new Date(inv.date);
-      let diff = today.getMonth() - d.getMonth();
-      if (d.getFullYear() < today.getFullYear()) diff += 12 * (today.getFullYear() - d.getFullYear());
-      if (diff >= 0 && diff < 6) monthlyInv[5 - diff] += inv.total;
+    const atRisk=vRisk.filter(v=>v.odBal>0).length;
+    const topPct=vRisk[0]?.pct||0;
+    const odCnt=invoices.filter(inv=>Math.floor((today-new Date(inv.date))/86400000)>30&&Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0))>0).length;
+    set('rk-critical-val',fmt(tOvr)); set('rk-at-risk',atRisk);
+    set('rk-top-pct',topPct+'%'); set('rk-overdue-cnt',odCnt);
+
+    const top5=vRisk.slice(0,5);
+    // Radar chart
+    mkChart('_rkRadar', document.getElementById('rk-radar-chart'), {
+      type:'radar',
+      data:{labels:['Balance Due','Invoiced Amt','Invoice Count','Overdue Bal','Risk %'],
+        datasets:top5.map((v,i)=>{const cols=['#6366f1','#ef4444','#f97316','#10b981','#8b5cf6'];return{label:v.name.length>12?v.name.slice(0,12)+'…':v.name,data:[v.balance/1000,v.invoiced/1000,v.count*10,v.odBal/1000,v.pct],borderColor:cols[i],backgroundColor:cols[i]+'22',pointBackgroundColor:cols[i],borderWidth:2};})},
+      options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:9}}}}, scales:{r:{ticks:{display:false},grid:{color:'#f1f5f9'},pointLabels:{font:{size:9,weight:700}}}}}
+    });
+    // Bar chart: balance by vendor
+    mkChart('_rkBar', document.getElementById('rk-bar-chart'), {
+      type:'bar',
+      data:{labels:top5.map(v=>v.name.length>14?v.name.slice(0,14)+'…':v.name),
+        datasets:[{label:'Balance Due',data:top5.map(v=>v.balance),backgroundColor:top5.map((_,i)=>['#ef4444','#f97316','#f59e0b','#8b5cf6','#6366f1'][i]),borderRadius:6,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#f1f5f9'}}}}
     });
 
-    payments.forEach(p => {
-      let d = new Date(p.date);
-      let diff = today.getMonth() - d.getMonth();
-      if (d.getFullYear() < today.getFullYear()) diff += 12 * (today.getFullYear() - d.getFullYear());
-      if (diff >= 0 && diff < 6) monthlyPay[5 - diff] += p.amount;
-    });
+    // Risk table
+    const rkTb=document.getElementById('rk-table-body');
+    if(rkTb) rkTb.innerHTML=vRisk.length?vRisk.map((v,i)=>{
+      const level=v.pct>70?'CRITICAL':v.pct>40?'HIGH':v.pct>20?'MEDIUM':'LOW';
+      const levelCls=v.pct>70?'bg-red-100 text-red-700':v.pct>40?'bg-orange-100 text-orange-700':v.pct>20?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700';
+      return`<tr class="hover:bg-gray-50 transition-colors">
+        <td class="py-3 px-4 text-center"><span class="w-6 h-6 rounded-full ${i===0?'bg-red-100 text-red-700':i===1?'bg-orange-100 text-orange-700':'bg-gray-100 text-gray-600'} flex items-center justify-center text-[10px] font-black mx-auto">${i+1}</span></td>
+        <td class="py-3 px-4 font-bold text-gray-800">${v.name}</td>
+        <td class="py-3 px-4 text-right font-medium text-gray-500">₹${v.invoiced.toLocaleString()}</td>
+        <td class="py-3 px-4 text-right font-medium text-emerald-600">₹${v.paid.toLocaleString()}</td>
+        <td class="py-3 px-4 text-center"><span class="bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full">${v.count}</span></td>
+        <td class="py-3 px-4 text-center"><span class="text-[10px] font-black px-2 py-0.5 rounded-full ${levelCls}">${level}</span></td>
+        <td class="py-3 px-4"><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden"><div class="h-full rounded-full ${v.pct>70?'bg-red-500':v.pct>40?'bg-orange-400':'bg-emerald-500'}" style="width:${v.pct}%"></div></div><span class="text-[10px] font-bold text-gray-400 w-10 text-right">${v.pct}%</span></div></td>
+        <td class="py-3 px-4 text-right font-black text-red-600">₹${v.balance.toLocaleString()}</td>
+      </tr>`;
+    }).join(''):'<tr><td colspan="8" class="text-center py-6 text-gray-400">No active risk liabilities.</td></tr>';
 
-    if (window.velocityChartInst) window.velocityChartInst.destroy();
-    window.velocityChartInst = new Chart(ctxVelocity, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: 'Owed Limit (Liabilities Incurred)', data: monthlyInv, borderColor: '#ef4444', backgroundColor: '#fca5a5', fill: true, tension: 0.4 },
-          { label: 'Outflow Strategy (Payments Done)', data: monthlyPay, borderColor: '#3b82f6', backgroundColor: '#93c5fd', fill: true, tension: 0.4 }
-        ]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  }
-
-  // Vendor Concentration Risks
-  const vendorRisk = vendors.map(v => {
-    const tInv = invoices.filter(inv => inv.vendor === v.name).reduce((s, inv) => s + inv.total, 0);
-    const tPay = payments.filter(p => p.vendor === v.name).reduce((s, p) => s + p.amount, 0);
-    return { name: v.name, invoiced: tInv, paid: tPay, balance: tInv - tPay };
-  }).filter(v => v.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
-
-  const riskTbody = document.getElementById('risk-concentration-body');
-  if (riskTbody) {
-    if(vendorRisk.length === 0) {
-      riskTbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-gray-400 font-medium">No active risk liabilities detected.</td></tr>';
-    } else {
-      riskTbody.innerHTML = vendorRisk.map((v, i) => {
-        const percentage = v.invoiced > 0 ? Math.round((v.balance / v.invoiced) * 100) : 0;
-        return `
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="py-3 px-4 text-center">
-              <span class="w-6 h-6 rounded-full ${i === 0 ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'} flex items-center justify-center text-[10px] font-black mx-auto">${i + 1}</span>
-            </td>
-            <td class="py-3 px-4 font-bold text-gray-800">${v.name}</td>
-            <td class="py-3 px-4 text-center font-medium text-gray-500">₹ ${v.invoiced.toLocaleString()}</td>
-            <td class="py-3 px-4 text-center font-medium text-emerald-600">₹ ${v.paid.toLocaleString()}</td>
-            <td class="py-3 px-4">
-              <div class="flex items-center gap-2">
-                <div class="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
-                  <div class="bg-red-500 h-full rounded-full" style="width: ${percentage}%"></div>
-                </div>
-                <span class="text-[10px] font-bold text-gray-500">${percentage}% Unpaid</span>
-              </div>
-            </td>
-            <td class="py-3 px-4 text-right font-black text-red-600">₹ ${v.balance.toLocaleString()}</td>
-          </tr>
-        `;
-      }).join('');
-      
-      const riskGrid = document.getElementById('analytics-card-grid');
-      if (riskGrid) {
-        riskGrid.innerHTML = vendorRisk.map((v, i) => {
-          const percentage = v.invoiced > 0 ? Math.round((v.balance / v.invoiced) * 100) : 0;
-          return `
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative">
-            <div class="absolute top-0 left-0 bottom-0 w-[5px] rounded-l-2xl ${i===0?'bg-red-500':'bg-orange-500'}"></div>
-            
-            <div class="flex items-center gap-3 mb-4 ml-1">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-[13px] flex-shrink-0 shadow-sm ${i===0?'bg-red-50 text-red-600 border border-red-100':'bg-orange-50 text-orange-600 border border-orange-100'}">#${i + 1}</div>
-              <div class="flex-1 min-w-0">
-                <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${v.name}</p>
-                <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${percentage}% UNPAID LIABILITY</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 mb-2 ml-1">
-              <div class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-gray-100">
-                <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-0.5">INVOICED</p>
-                <p class="text-[13px] font-black text-gray-800">₹${v.invoiced>=1000?(v.invoiced/1000).toFixed(1)+'k':v.invoiced}</p>
-              </div>
-              <div class="bg-red-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-red-50">
-                <p class="text-[9px] text-red-500 font-black uppercase tracking-widest mb-0.5">EXPOSURE</p>
-                <p class="text-[13px] font-black text-red-600">₹${v.balance>=1000?(v.balance/1000).toFixed(1)+'k':v.balance}</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-2 mt-4 ml-1 px-1">
-               <div class="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
-                 <div class="bg-gradient-to-r from-orange-400 to-red-500 h-full rounded-full" style="width: ${percentage}%"></div>
-               </div>
-               <span class="text-[10px] font-black text-red-500 uppercase tracking-widest shadow-sm border border-red-100 bg-red-50 px-2 py-0.5 rounded-md">RISK</span>
-            </div>
-          </div>`;
-        }).join('');
-      }
-    }
+    // Mobile cards
+    const rkGrid=document.getElementById('rk-card-grid');
+    if(rkGrid) rkGrid.innerHTML=top5.map((v,i)=>{
+      const level=v.pct>70?'CRITICAL':v.pct>40?'HIGH':v.pct>20?'MEDIUM':'LOW';
+      const lCol=v.pct>70?'#ef4444':v.pct>40?'#f97316':'#6366f1';
+      return`<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative">
+        <div class="absolute top-0 left-0 bottom-0 w-1.5 rounded-l-2xl" style="background:${lCol}"></div>
+        <div class="flex items-center gap-3 mb-3 ml-2">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-black text-[11px] flex-shrink-0 shadow-sm" style="background:${lCol}22;color:${lCol};border:1.5px solid ${lCol}44">#${i+1}</div>
+          <div class="flex-1 min-w-0"><p class="font-black text-gray-800 text-[14px] truncate">${v.name}</p><span class="text-[9px] font-black px-1.5 py-0.5 rounded" style="background:${lCol}22;color:${lCol}">${level}</span></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 ml-2">
+          <div class="bg-gray-50 rounded-xl p-2 text-center"><p class="text-[8px] text-gray-500 font-black uppercase">INVOICED</p><p class="text-[12px] font-black text-gray-800">₹${v.invoiced>=1000?(v.invoiced/1000).toFixed(1)+'k':v.invoiced}</p></div>
+          <div class="rounded-xl p-2 text-center" style="background:${lCol}11"><p class="text-[8px] font-black uppercase" style="color:${lCol}">EXPOSURE</p><p class="text-[12px] font-black" style="color:${lCol}">₹${v.balance>=1000?(v.balance/1000).toFixed(1)+'k':v.balance}</p></div>
+        </div>
+        <div class="flex items-center gap-2 mt-3 ml-2"><div class="flex-1 bg-gray-100 h-1.5 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${v.pct}%;background:${lCol}"></div></div><span class="text-[10px] font-black" style="color:${lCol}">${v.pct}%</span></div>
+      </div>`;
+    }).join('');
   }
 };
+
