@@ -465,9 +465,9 @@
       const pctBar = `<div class="flex items-center gap-1.5"><div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full ${v.pct>70?'bg-red-500':v.pct>40?'bg-orange-400':'bg-emerald-500'}" style="width:${v.pct}%"></div></div><span class="text-[10px] font-bold text-gray-400">${v.pct}%</span></div>`;
       return `<tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.goToVendorReportPage && window.goToVendorReportPage(null, '${v.name}')">
         <td class="py-2.5 px-4"><span class="font-bold text-gray-800">${v.name}</span></td>
-        <td class="py-2.5 px-4 text-right font-medium text-gray-600">₹${v.invoiced.toLocaleString()}</td>
-        <td class="py-2.5 px-4 text-right font-medium text-emerald-600">₹${v.paid.toLocaleString()}</td>
-        <td class="py-2.5 px-4 text-right font-black ${v.balance>0?'text-red-600':'text-gray-400'}">₹${v.balance.toLocaleString()}</td>
+        <td class="py-2.5 px-4 text-right font-medium text-gray-600 td-money">${window.formatCurrency(v.invoiced)}</td>
+        <td class="py-2.5 px-4 text-right font-medium text-emerald-600 td-money">${window.formatCurrency(v.paid)}</td>
+        <td class="py-2.5 px-4 text-right font-black ${v.balance>0?'text-red-600':'text-gray-400'} td-money">${window.formatCurrency(v.balance)}</td>
         <td class="py-2.5 px-4 text-center"><span class="bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full">${v.count}</span></td>
         <td class="py-2.5 px-4">${pctBar}</td>
         <td class="py-2.5 px-4 text-center"><button class="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded hover:bg-indigo-100 transition" onclick="event.stopPropagation();window.goToVendorReportPage && window.goToVendorReportPage(null, '${v.name}')">Ledger</button></td>

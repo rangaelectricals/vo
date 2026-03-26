@@ -165,7 +165,7 @@
     const today    = new Date();
 
     let list = (window.invoiceList || []).map(inv => {
-      const rawPaid = window.getPaidAmountForInvoice(inv.number);
+      const rawPaid = window.getPaidAmountForInvoice(inv);
       const paidAmt = Math.min(inv.total, rawPaid);
       const balance  = Math.max(0, parseFloat((inv.total - rawPaid).toFixed(2)));
       const ageing   = Math.floor((today - new Date(inv.date)) / 86400000);

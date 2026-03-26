@@ -1,50 +1,89 @@
 <!-- Premium Glass Sidebar -->
-<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#1c2434] shadow-xl z-40 hidden md:flex flex-col transition-transform text-white animate-fadeIn" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
-  <div class="px-6 py-5 border-b border-gray-700/50">
-    <h1 class="text-[20px] font-black text-white tracking-wide leading-tight">VendorApp</h1>
-    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">RANGA ELECTRICALS</p>
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 sidebar-pattern shadow-2xl z-40 hidden md:flex flex-col transition-transform text-white animate-fadeIn" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
+  <div class="px-6 py-8 border-b border-white/5 relative z-10 flex flex-col items-center">
+    <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center shadow-xl mb-4 group transition-all hover:scale-105">
+      <img src="logo.png" alt="Logo" class="w-full h-full object-contain filter drop-shadow-md" />
+    </div>
+    <div class="text-center">
+      <h1 class="text-[20px] font-black text-white tracking-tight leading-tight uppercase font-outfit">VendorApp</h1>
+      <p class="text-[9px] text-indigo-400 font-black uppercase tracking-[0.25em] mt-1 opacity-90">RANGA ELECTRICALS</p>
+    </div>
   </div>
-  <nav class="mt-4 px-3 flex-1 overflow-y-auto">
-    <ul class="flex flex-col gap-1 list-none m-0 p-0">
-      <li><a href="#dashboard" id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">dashboard</span> Dashboard</a></li>
-      <li><a href="#vendors" id="nav-vendors" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">groups</span> Vendors</a></li>
-      <li><a href="#invoices" id="nav-invoices" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">receipt_long</span> Invoices</a></li>
-      <li><a href="#payments" id="nav-payments" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">payments</span> Payments</a></li>
-      <li><a href="#report" id="nav-report" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">bar_chart</span> Outstanding Report</a></li>
-      <li><a href="#analytics" id="nav-analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">query_stats</span> AI Analytics</a></li>
-      <li><a href="#users" id="nav-users" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all" style="display: none;"><span class="material-icons text-[20px]">manage_accounts</span> Manage Users</a></li>
+
+  <nav class="mt-6 px-4 flex-1 overflow-y-auto relative z-10 custom-scrollbar">
+    <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2 opacity-50">Main Menu</div>
+    <ul class="flex flex-col list-none m-0 p-0">
+      <li><a href="#dashboard" id="nav-dashboard" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">dashboard</span> Dashboard</a></li>
+      <li><a href="#vendors" id="nav-vendors" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">groups</span> Vendors</a></li>
+      <li><a href="#invoices" id="nav-invoices" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">receipt_long</span> Invoices</a></li>
+      <li><a href="#payments" id="nav-payments" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">payments</span> Payments</a></li>
     </ul>
+
+    <div class="sidebar-divider"></div>
+    <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2 opacity-50">Reports & Insights</div>
+    <ul class="flex flex-col list-none m-0 p-0">
+      <li><a href="#report" id="nav-report" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">bar_chart</span> Master Ledger</a></li>
+      <li><a href="#analytics" id="nav-analytics" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">query_stats</span> AI Analytics</a></li>
+    </ul>
+
+    <div id="nav-users-section" style="display: none;">
+        <div class="sidebar-divider"></div>
+        <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2 opacity-50">System</div>
+        <ul class="flex flex-col list-none m-0 p-0">
+            <li><a href="#users" id="nav-users" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all"><span class="material-icons text-[20px]">manage_accounts</span> Staff Management</a></li>
+        </ul>
+    </div>
   </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="p-4 sidebar-glass-footer relative z-10 mt-auto">
+    <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+        <div id="sb-avatar" class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-lg group-hover:scale-110 transition-transform">A</div>
+        <div class="flex-1 min-w-0">
+            <p id="sb-username" class="text-sm font-black text-white truncate leading-tight">Administrator</p>
+            <p id="sb-role" class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Super User</p>
+        </div>
+        <button onclick="window.logoutUser()" class="text-gray-500 hover:text-red-400 transition-colors">
+            <span class="material-icons text-[18px]">logout</span>
+        </button>
+    </div>
+  </div>
 </aside>
 
 <!-- Mobile Drawer -->
-<div id="mobile-drawer" class="fixed inset-0 z-50 bg-black bg-opacity-40 hidden md:hidden transition-opacity">
-  <aside class="absolute top-0 left-0 h-full w-64 bg-[#1c2434] shadow-2xl text-white flex flex-col">
-    <div class="flex items-center justify-between px-4 py-5 border-b border-gray-700/50">
-      <div>
-        <h1 class="text-xl font-black text-white tracking-wide">VendorApp</h1>
-        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">RANGA ELECTRICALS</p>
+<div id="mobile-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden md:hidden transition-all duration-300">
+  <aside class="absolute top-0 left-0 h-full w-72 sidebar-pattern shadow-2xl text-white flex flex-col transform transition-transform">
+    <div class="flex items-center justify-between px-6 py-6 border-b border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md p-1.5 flex items-center justify-center">
+            <img src="logo.png" alt="Logo" class="w-full h-full object-contain" />
+        </div>
+        <div>
+            <h1 class="text-lg font-black text-white tracking-tight leading-tight uppercase">VendorApp</h1>
+            <p class="text-[8px] text-indigo-400 font-black uppercase tracking-wider">RANGA ELECTRICALS</p>
+        </div>
       </div>
-      <button class="flex items-center justify-center p-1 text-gray-400 hover:text-white rounded-md hover:bg-gray-800" id="drawer-close" aria-label="Close drawer">
+      <button class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded-full bg-white/5" id="drawer-close">
         <span class="material-icons text-xl">close</span>
       </button>
     </div>
-    <nav class="mt-4 px-3 flex-1 overflow-y-auto">
-      <ul class="flex flex-col gap-1 list-none m-0 p-0">
-        <li><a href="#dashboard" id="drawer-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">dashboard</span> Dashboard</a></li>
-        <li><a href="#vendors" id="drawer-vendors" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">groups</span> Vendors</a></li>
-        <li><a href="#invoices" id="drawer-invoices" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">receipt_long</span> Invoices</a></li>
-        <li><a href="#payments" id="drawer-payments" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">payments</span> Payments</a></li>
-        <li><a href="#report" id="drawer-report" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">bar_chart</span> Outstanding Report</a></li>
-        <li><a href="#analytics" id="drawer-analytics" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"><span class="material-icons text-[20px]">query_stats</span> AI Analytics</a></li>
-        <li><a href="#users" id="drawer-users" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all" style="display: none;"><span class="material-icons text-[20px]">manage_accounts</span> Manage Users</a></li>
+    <nav class="mt-6 px-4 flex-1 overflow-y-auto custom-scrollbar">
+      <ul class="flex flex-col list-none m-0 p-0">
+        <li><a href="#dashboard" id="drawer-dashboard" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">dashboard</span> Dashboard</a></li>
+        <li><a href="#vendors" id="drawer-vendors" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">groups</span> Vendors</a></li>
+        <li><a href="#invoices" id="drawer-invoices" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">receipt_long</span> Invoices</a></li>
+        <li><a href="#payments" id="drawer-payments" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">payments</span> Payments</a></li>
+        <div class="sidebar-divider mx-2"></div>
+        <li><a href="#report" id="drawer-report" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">bar_chart</span> Master Ledger</a></li>
+        <li><a href="#analytics" id="drawer-analytics" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">query_stats</span> AI Analytics</a></li>
+        <li id="drawer-users-section" style="display: none;"><a href="#users" id="drawer-users" class="nav-link flex items-center gap-4 px-4 py-3 text-sm font-semibold text-gray-400"><span class="material-icons text-[22px]">manage_accounts</span> Staff Mgmt</a></li>
       </ul>
     </nav>
   </aside>
 </div>
 
 <!-- Premium Glass Top Bar -->
-<header class="fixed top-0 left-0 right-0 h-[64px] bg-white border-b border-gray-200 z-30 px-6 flex items-center justify-between" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
+<header class="fixed top-0 left-0 right-0 h-[64px] header-dark z-30 px-6 flex items-center justify-between" style="font-family: 'Inter', 'SF Pro', Arial, sans-serif;">
   <div class="flex items-center gap-3 pl-0 md:pl-64 transition-all h-full w-full basis-1/2">
     <button class="flex items-center justify-center p-1.5 rounded-md text-gray-600 hover:bg-gray-100 md:hidden" id="sidebar-toggle" aria-label="Open sidebar">
       <span class="material-icons">menu</span>
@@ -57,6 +96,35 @@
     </div>
   </div>
   <nav class="flex items-center gap-4">
+    <!-- Notifications -->
+    <div class="relative">
+      <button id="notification-btn" class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-all relative">
+        <span class="material-icons">notifications</span>
+        <div id="notification-dot" class="notification-dot" style="display: none;"></div>
+      </button>
+
+      <!-- Dropdown Panel -->
+      <div id="notification-panel" class="notification-panel">
+        <div class="notification-header flex justify-between items-center">
+          <div>
+            <h3 class="font-black text-gray-800 text-[14px]">Critical Aging</h3>
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Overdue 30+ Days</p>
+          </div>
+          <span id="notif-count-badge" class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="notification-body" class="notification-body custom-scrollbar min-h-[100px] flex flex-col">
+            <!-- Items injected here -->
+            <div class="m-auto text-center py-6">
+                <span class="material-icons text-gray-200 text-4xl">notifications_off</span>
+                <p class="text-gray-400 text-[11px] font-bold mt-2">No critical alerts</p>
+            </div>
+        </div>
+        <div class="p-3 bg-gray-50 border-t border-gray-100 text-center">
+            <a href="#report" class="text-[11px] font-black text-indigo-600 hover:underline">View All Outstanding</a>
+        </div>
+      </div>
+    </div>
+
     <div class="flex items-center gap-2">
       <div id="layout-avatar" class="w-8 h-8 rounded-full bg-[#3f51b5] text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">A</div>
       <div class="hidden sm:flex flex-col items-start justify-center ml-1">

@@ -31,30 +31,62 @@
   </div>
 
   <!-- ── 4 KPI CARDS ─────────────────────────────────────────── -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="kpi-card" style="background:linear-gradient(135deg,#1d4ed8,#2563eb)" onclick="window.location.hash='invoices'">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="kpi-card" style="background:linear-gradient(135deg,#1e40af,#3b82f6)" onclick="window.location.hash='invoices'">
       <div class="kpi-icon"><span class="material-icons text-white text-xl">receipt_long</span></div>
-      <p class="kpi-label">Total Invoices</p>
+      <p class="kpi-label">Total Billed</p>
       <h2 class="kpi-val" id="stat-invoices">--</h2>
-      <p class="kpi-sub">Click to view all →</p>
+      <p class="kpi-sub lowercase">Total invoice volume →</p>
     </div>
-    <div class="kpi-card" style="background:linear-gradient(135deg,#5b21b6,#7c3aed)" onclick="window.location.hash='payments'">
-      <div class="kpi-icon"><span class="material-icons text-white text-xl">check_circle</span></div>
-      <p class="kpi-label">Total Paid</p>
+    <div class="kpi-card" style="background:linear-gradient(135deg,#065f46,#10b981)" onclick="window.location.hash='payments'">
+      <div class="kpi-icon"><span class="material-icons text-white text-xl">payments</span></div>
+      <p class="kpi-label">Total Outflow</p>
       <h2 class="kpi-val" id="stat-paid">--</h2>
-      <p class="kpi-sub">Click to view payments →</p>
+      <p class="kpi-sub lowercase">Total payments recorded →</p>
     </div>
-    <div class="kpi-card" style="background:linear-gradient(135deg,#065f46,#047857)" onclick="window.location.hash='report'">
+    <div class="kpi-card" style="background:linear-gradient(135deg,#9f1239,#f43f5e)" onclick="window.location.hash='report'">
       <div class="kpi-icon"><span class="material-icons text-white text-xl">account_balance_wallet</span></div>
-      <p class="kpi-label">Outstanding</p>
+      <p class="kpi-label">Net Outstanding</p>
       <h2 class="kpi-val" id="stat-outstanding">--</h2>
-      <p class="kpi-sub">Click for full report →</p>
+      <p class="kpi-sub lowercase">Current net liability →</p>
     </div>
-    <div class="kpi-card" style="background:linear-gradient(135deg,#b45309,#d97706)" onclick="window.location.hash='analytics'">
-      <div class="kpi-icon"><span class="material-icons text-white text-xl">warning</span></div>
-      <p class="kpi-label">Overdue (&gt;30d)</p>
+    <div class="kpi-card" style="background:linear-gradient(135deg,#92400e,#f59e0b)" onclick="window.location.hash='analytics'">
+      <div class="kpi-icon"><span class="material-icons text-white text-xl">report_problem</span></div>
+      <p class="kpi-label">Critical Overdue</p>
       <h2 class="kpi-val" id="stat-overdue">--</h2>
-      <p class="kpi-sub">Click for analytics →</p>
+      <p class="kpi-sub lowercase">Unpaid beyond 60 days →</p>
+    </div>
+  </div>
+
+  <!-- ── ADVANCED INSIGHTS STRIP ──────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center"><span class="material-icons text-lg">calendar_month</span></div>
+      <div>
+        <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Avg Cycle</p>
+        <p class="text-sm font-black text-white" id="feat-avg-days">--</p>
+      </div>
+    </div>
+    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><span class="material-icons text-lg">storefront</span></div>
+      <div>
+        <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Active Vendors</p>
+        <p class="text-sm font-black text-white" id="feat-vendors">--</p>
+      </div>
+    </div>
+    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center"><span class="material-icons text-lg">savings</span></div>
+      <div>
+        <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Advance Credits</p>
+        <p class="text-sm font-black text-white" id="feat-unallocated">--</p>
+      </div>
+    </div>
+    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center"><span class="material-icons text-lg">pie_chart</span></div>
+      <div>
+        <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Settlement Ratio</p>
+        <p class="text-sm font-black text-white" id="feat-ratio">--</p>
+      </div>
     </div>
   </div>
 
@@ -203,8 +235,8 @@
       </table>
     </div>
     
-    <!-- Mobile Card View -->
-    <div id="hotlist-card-grid" class="grid grid-cols-1 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
+    <!-- Mobile/Tablet Card View -->
+    <div id="hotlist-card-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 md:hidden bg-[#f8fafc]"></div>
   </div>
 
 </div>
@@ -215,8 +247,9 @@
   .kpi-card::before { content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,.15);border-radius:50%; }
   .kpi-icon { width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px; }
   .kpi-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.8; }
-  .kpi-val { font-size:28px;font-weight:900;line-height:1;margin:4px 0; }
-  .kpi-sub { font-size:9px;opacity:.6;font-weight:600; }
-  .qa-btn { background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .2s;backdrop-filter: blur(8px); }
-  .qa-btn:hover { background:rgba(255,255,255,.12);transform:translateY(-2px); }
+  .kpi-val { font-size: clamp(1.5rem, 6vw, 1.875rem); font-weight: 900; line-height: 1; margin: 4px 0; letter-spacing: -0.02em; }
+  .kpi-sub { font-size: 10px; opacity: 0.7; font-weight: 600; margin-top: auto; }
+  .qa-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .qa-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-3px); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); }
+  .qa-btn:active { transform: translateY(-1px); }
 </style>

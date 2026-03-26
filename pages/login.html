@@ -1,71 +1,106 @@
-<div id="login-root" class="fixed inset-0 flex items-center justify-center z-[9999] overflow-hidden"
-  style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%); opacity: 1; transition: opacity 0.4s ease;">
-
-  <!-- Animated background blobs -->
+<div id="login-root" class="fixed inset-0 flex items-center justify-center z-[9999] overflow-hidden transition-all duration-700 font-sans"
+  style="background: radial-gradient(at 0% 0%, #1e293b 0%, #0f172a 100%);">
+  
+  <!-- Perspective Decorative Elements -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-20"
-      style="background:radial-gradient(circle,#3b82f6,transparent);animation:pulse 4s ease-in-out infinite;"></div>
-    <div class="absolute -bottom-24 -right-24 w-80 h-80 rounded-full opacity-15"
-      style="background:radial-gradient(circle,#818cf8,transparent);animation:pulse 5s ease-in-out infinite 1s;"></div>
+    <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px] animate-pulse"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+    
+    <!-- Grid Overlay -->
+    <div class="absolute inset-0 opacity-[0.03]" 
+         style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 50px 50px;"></div>
   </div>
 
-  <div class="relative w-full max-w-[420px] mx-4">
-    <div class="relative bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20">
-      <!-- Header -->
-      <div class="relative px-8 pt-8 pb-6 text-center" style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%)">
-        <div class="relative inline-flex w-16 h-16 rounded-2xl bg-white/20 backdrop-blur items-center justify-center mb-4 shadow-inner mx-auto">
-          <span class="material-icons text-white text-3xl">store_mall_directory</span>
-        </div>
-        <h1 class="text-2xl font-black text-white tracking-tight">VendorApp</h1>
-        <p class="text-blue-100 text-[11px] font-bold uppercase tracking-widest mt-1">Secure Sign In</p>
-      </div>
-
-      <!-- Form Body -->
-      <div class="px-8 py-7">
-        <div id="login-error" class="hidden mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold animate-shake">
-          <span class="material-icons text-[18px]">error_outline</span>
-          <span id="login-error-msg">Invalid credentials</span>
-        </div>
-
-        <form id="login-form" class="space-y-4">
-          <div>
-            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
-            <input type="text" id="login-username" placeholder="Username" required autocomplete="username"
-              class="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm font-semibold text-gray-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-gray-300" />
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-            <div class="relative">
-              <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password"
-                class="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm font-semibold text-gray-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-gray-300" />
-              <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 p-1">
-                <span class="material-icons text-[18px]" id="pw-eye-icon">visibility</span>
-              </button>
+  <div class="relative w-full max-w-[440px] px-6 animate-fadeInUp">
+    <div class="bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-2xl border border-white/20 overflow-hidden relative group">
+      <!-- Glow effect on hover -->
+      <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-[32px] blur"></div>
+      
+      <div class="relative bg-white rounded-[31px]">
+        <!-- Brand Header -->
+        <div class="pt-10 pb-6 text-center">
+            <div class="inline-flex w-24 h-24 rounded-3xl bg-slate-50 p-4 border border-slate-100 shadow-sm mb-6 mx-auto group-hover:scale-110 transition-transform duration-500">
+                <img src="logo.png" alt="Company Logo" class="w-full h-full object-contain" />
             </div>
-          </div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">VendorApp</h1>
+            <p class="text-[10px] text-indigo-500 font-black uppercase tracking-[0.3em] mt-1.5 opacity-80">Ranga Electricals Pvt Ltd</p>
+        </div>
 
-          <button type="submit" id="login-btn"
-            class="w-full py-4 rounded-xl text-sm font-black text-white flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
-            style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
-            <span class="material-icons text-[18px]" id="login-icon">login</span>
-            <span id="login-btn-text">Sign In</span>
-          </button>
-        </form>
+        <div class="px-10 pb-10">
+            <!-- Alert Display -->
+            <div id="login-error" class="hidden mb-6 px-4 py-3.5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 animate-shake">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-[18px]">error</span>
+                </div>
+                <p class="text-[11px] font-black uppercase tracking-tight" id="login-error-msg">Authentication Failed</p>
+            </div>
 
-        <div class="mt-8 pt-6 border-t border-gray-100 grid grid-cols-2 gap-3">
-           <button type="button" onclick="window._quickLogin('admin','admin123')" class="px-3 py-2 text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors uppercase tracking-wider">Quick Admin</button>
-           <button type="button" onclick="window._quickLogin('viewer','viewer123')" class="px-3 py-2 text-[10px] font-black text-purple-600 bg-purple-50 border border-purple-100 rounded-lg hover:bg-purple-100 transition-colors uppercase tracking-wider">Quick Viewer</button>
+            <form id="login-form" class="space-y-5">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identity</label>
+                    <div class="relative group/field">
+                        <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-indigo-500 transition-colors text-[20px]">person</span>
+                        <input type="text" id="login-username" placeholder="Username" required autocomplete="username"
+                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none focus:border-indigo-500/20 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all" />
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Credentials</label>
+                    <div class="relative group/field">
+                        <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-indigo-500 transition-colors text-[20px]">lock</span>
+                        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password"
+                            class="w-full pl-12 pr-12 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none focus:border-indigo-500/20 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all" />
+                        <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-2 transition-colors">
+                            <span class="material-icons text-[20px]" id="pw-eye-icon">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="login-btn"
+                        class="w-full py-4.5 rounded-2xl bg-slate-900 text-white font-black text-sm flex items-center justify-center gap-3 shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-indigo-500/20 hover:bg-indigo-600 active:scale-[0.98] transition-all group/btn">
+                        <span id="login-btn-text">Establish Connection</span>
+                        <span class="material-icons text-[20px] transition-transform group-hover/btn:translate-x-1" id="login-icon">arrow_forward</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-slate-100">
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center mb-4 opacity-60">Developer/Test Access</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="window._quickLogin('admin','admin123')"
+                        class="py-2.5 rounded-xl bg-slate-50 text-slate-600 font-black text-[10px] uppercase tracking-widest border border-slate-100 hover:bg-slate-100 transition-colors">Admin</button>
+                    <button type="button" onclick="window._quickLogin('viewer','viewer123')"
+                        class="py-2.5 rounded-xl bg-slate-50 text-slate-600 font-black text-[10px] uppercase tracking-widest border border-slate-100 hover:bg-slate-100 transition-colors">Viewer</button>
+                </div>
+            </div>
         </div>
       </div>
     </div>
+    
+    <p class="mt-8 text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-40">
+        &copy; 2024 Ranga Electricals &bull; Secure Protocol
+    </p>
   </div>
 </div>
 
+<style>
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeInUp { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 50px white inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+}
+#login-btn { padding-top: 1.1rem; padding-bottom: 1.1rem; }
+</style>
+
 <script>
 (function() {
-  console.log('[LOGIN] Script executing...');
-  
   const form    = document.getElementById('login-form');
   const btn     = document.getElementById('login-btn');
   const btnText = document.getElementById('login-btn-text');
@@ -89,38 +124,32 @@
   };
 
   function showError(msg) {
-    console.warn('[LOGIN] Authentication failed:', msg);
     errMsg.textContent = msg;
     errBox.classList.remove('hidden');
     btn.disabled = false;
-    btnText.textContent = 'Sign In';
-    btnIcon.textContent = 'login';
-    btn.style.background = 'linear-gradient(135deg,#2563eb,#1d4ed8)';
+    btnText.textContent = 'Establish Connection';
+    btnIcon.textContent = 'arrow_forward';
+    btn.className = btn.className.replace('bg-emerald-500', 'bg-slate-900').replace('bg-indigo-600', 'bg-slate-900');
   }
 
   function loginSuccess(user) {
-    console.log('[LOGIN] Success! User:', user.username);
     try {
       localStorage.setItem('_vapp_user', JSON.stringify({ username: user.username, name: user.name, role: user.role }));
     } catch(e) { console.error('LocalStorage error:', e); }
 
     window._appUser = user;
     btn.disabled = true;
-    btnText.textContent = 'Success!';
-    btnIcon.textContent = 'check_circle';
-    btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+    btnText.textContent = 'Connection Secured';
+    btnIcon.textContent = 'verified_user';
+    btn.classList.remove('bg-slate-900', 'hover:bg-indigo-600');
+    btn.classList.add('bg-emerald-500');
     
     document.getElementById('login-root').style.opacity = '0';
     setTimeout(() => {
       document.getElementById('login-root').remove();
-      if (typeof window._bootApp === 'function') {
-        console.log('[LOGIN] Booting main app...');
-        window._bootApp();
-      } else {
-        console.error('[LOGIN] _bootApp not found! Reloading...');
-        window.location.reload();
-      }
-    }, 400);
+      if (typeof window._bootApp === 'function') window._bootApp();
+      else window.location.reload();
+    }, 600);
   }
 
   form.onsubmit = function(e) {
@@ -131,26 +160,21 @@
     if (!u || !p) return;
 
     btn.disabled = true;
-    btnText.textContent = 'Verifying...';
-    btnIcon.textContent = 'sync';
+    btnText.textContent = 'Verifying Identity...';
+    btnIcon.textContent = 'hourglass_top';
     errBox.classList.add('hidden');
 
     const scriptUrl = window.CONFIG && window.CONFIG.SCRIPT_URL;
     if (scriptUrl) {
-      console.log('[LOGIN] Attempting GSheet authentication...');
       const url = scriptUrl + '?action=login&username=' + encodeURIComponent(u) + '&password=' + encodeURIComponent(p);
       fetch(url)
         .then(r => r.json())
         .then(data => {
           if (data.success) loginSuccess(data.user);
-          else showError(data.error || 'Invalid username or password.');
+          else showError(data.error || 'Identity Verification Failed');
         })
-        .catch(err => {
-          console.error('[LOGIN] Fetch error:', err);
-          _localLogin(u, p);
-        });
+        .catch(err => _localLogin(u, p));
     } else {
-      console.log('[LOGIN] No script URL, using fallback...');
       _localLogin(u, p);
     }
   };
@@ -167,8 +191,7 @@
     }
     const user = localUsers.find(x => x.username === u && x.password === p);
     if (user) loginSuccess(user);
-    else showError('Invalid username or password.');
+    else showError('Invalid Identity Credentials');
   }
-
 })();
 </script>

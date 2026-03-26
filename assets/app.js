@@ -1,4 +1,4 @@
-﻿// â”€â”€ Toaster Notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Global Utilities ──────────────────────────────────────
 window.showToaster = function(message, type = 'success') {
   let toaster = document.getElementById('main-toaster');
   if (!toaster) {
@@ -12,6 +12,66 @@ window.showToaster = function(message, type = 'success') {
   toaster.style.transform = 'translateX(-50%)';
   toaster.style.opacity = '1';
   setTimeout(() => { toaster.style.opacity = '0'; }, 2000);
+};
+
+window.hideSplash = function() {
+  const splash = document.getElementById('app-splash');
+  if (splash) {
+    splash.style.opacity = '0';
+    setTimeout(() => { if (splash.parentNode) splash.remove(); }, 800);
+  }
+};
+
+window.formatCurrency = function(amount, useShort = false) {
+  const num = Number(amount) || 0;
+  if (useShort) {
+    if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + 'Cr';
+    if (num >= 100000) return '₹' + (num / 100000).toFixed(2) + 'L';
+    if (num >= 1000) return '₹' + (num / 1000).toFixed(1) + 'k';
+  }
+  return '₹' + num.toLocaleString('en-IN');
+};
+
+window.updateNotifications = function() {
+    const invoices = window.invoiceList || [];
+    const today = new Date();
+    const critical = invoices.filter(inv => {
+        const paid = window.getPaidAmountForInvoice ? window.getPaidAmountForInvoice(inv) : 0;
+        const balance = inv.total - paid;
+        const aging = Math.floor((today - new Date(inv.date)) / 86400000);
+        return balance > 0 && aging > 30;
+    }).map(inv => ({
+        ...inv,
+        aging: Math.floor((today - new Date(inv.date)) / 86400000),
+        balance: inv.total - (window.getPaidAmountForInvoice ? window.getPaidAmountForInvoice(inv) : 0)
+    })).sort((a, b) => b.aging - a.aging);
+
+    const dot = document.getElementById('notification-dot');
+    const badge = document.getElementById('notif-count-badge');
+    const body = document.getElementById('notification-body');
+
+    if (dot) dot.style.display = critical.length > 0 ? 'block' : 'none';
+    if (badge) badge.innerText = critical.length;
+    
+    if (body) {
+        if (critical.length === 0) {
+            body.innerHTML = `
+                <div class="m-auto text-center py-8">
+                    <span class="material-icons text-gray-200 text-5xl">notifications_paused</span>
+                    <p class="text-gray-400 text-[11px] font-black mt-2 uppercase tracking-widest">No critical alerts</p>
+                </div>`;
+        } else {
+            body.innerHTML = critical.map(inv => `
+                <div class="notification-item urgent flex items-center gap-3 cursor-pointer" onclick="window._vendorReportId='${(window.vendorList||[]).find(v=>v.name===inv.vendor)?.id}'; window.location.hash='vendor-report';">
+                    <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-black text-[12px] flex-shrink-0">${inv.aging}d</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[12px] font-black text-gray-800 truncate leading-tight">${inv.vendor}</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-0.5">Inv #${inv.number} · ₹${inv.balance.toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
 };
 // ============================================================
 //  Vendor Outstanding App — Main JS
@@ -71,7 +131,8 @@ window.buildAllocations = function() {
 
   const allPayments = [...(window.paymentList || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
   const allInvoices = (window.invoiceList || []).reduce((acc, inv) => {
-    acc[inv.number] = { total: Number(inv.total)||0, allocated: 0, date: new Date(inv.date), refs: [] };
+    const key = (String(inv.vendor || '') + '|||' + String(inv.number || '')).toLowerCase().trim();
+    acc[key] = { total: Number(inv.total)||0, allocated: 0, date: new Date(inv.date), refs: [] };
     return acc;
   }, {});
 
@@ -82,7 +143,10 @@ window.buildAllocations = function() {
 
     // Sort target invoices oldest first to fill debts chronologically
     const targetInvs = attachedInvs
-      .map(invNo => ({ no: invNo, info: allInvoices[invNo] }))
+      .map(invNo => {
+        const key = (String(p.vendor || '') + '|||' + String(invNo)).toLowerCase().trim();
+        return { no: invNo, key: key, info: allInvoices[key] };
+      })
       .filter(x => x.info)
       .sort((a,b) => a.info.date - b.info.date);
 
@@ -118,19 +182,32 @@ window.buildAllocations = function() {
     }
   });
 
-  Object.keys(allInvoices).forEach(invNo => {
-    window._invPaidAllocations[invNo] = allInvoices[invNo].allocated;
-    window._invPaymentRefs[invNo] = allInvoices[invNo].refs;
+  Object.keys(allInvoices).forEach(key => {
+    window._invPaidAllocations[key] = allInvoices[key].allocated;
+    window._invPaymentRefs[key] = allInvoices[key].refs;
   });
+
+  // Automatically update proactive alerts whenever the financial state recomputes
+  if (window.updateNotifications) window.updateNotifications();
 };
 
-window.getPaidAmountForInvoice = function(invoiceNumber) {
+window.getPaidAmountForInvoice = function(invoiceNumber, vendorName) {
   if (!window._invPaidAllocations) window.buildAllocations();
-  return window._invPaidAllocations[invoiceNumber] || 0;
+  if (typeof invoiceNumber === 'object' && invoiceNumber !== null) {
+     vendorName = invoiceNumber.vendor;
+     invoiceNumber = invoiceNumber.number;
+  }
+  const key = (String(vendorName || '') + '|||' + String(invoiceNumber || '')).toLowerCase().trim();
+  return window._invPaidAllocations[key] || 0;
 };
-window.getPaymentRefsForInvoice = function(invoiceNumber) {
+window.getPaymentRefsForInvoice = function(invoiceNumber, vendorName) {
   if (!window._invPaymentRefs) window.buildAllocations();
-  return window._invPaymentRefs[invoiceNumber] || [];
+  if (typeof invoiceNumber === 'object' && invoiceNumber !== null) {
+     vendorName = invoiceNumber.vendor;
+     invoiceNumber = invoiceNumber.number;
+  }
+  const key = (String(vendorName || '') + '|||' + String(invoiceNumber || '')).toLowerCase().trim();
+  return window._invPaymentRefs[key] || [];
 };
 
 // â”€â”€ Utility: populate a <select> from an array â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -247,28 +324,35 @@ window.exportToExcel = async function(filename, sheetName, columns, dataRows, me
 
 // ── SPA Page Loader ──────────────────────────────────────────
 window.highlightNav = function(hash) {
-  const navIds = ['dashboard', 'vendors', 'invoices', 'payments', 'report', 'analytics', 'add-invoice', 'add-payment'];
-  // Map sub-pages to their parent nav IDs
   const navMap = {
     'dashboard': 'dashboard', 'vendors': 'vendors',
     'invoices': 'invoices', 'add-invoice': 'invoices',
     'payments': 'payments', 'add-payment': 'payments',
-    'report': 'report', 'analytics': 'analytics'
+    'report': 'report', 'analytics': 'analytics',
+    'vendor-report': 'vendors', 'users': 'users'
   };
-  const page = hash.split('-').length > 1 && (hash === 'add-invoice' || hash === 'add-payment' || hash === 'vendor-report') ? hash : hash.split('-')[0];
-  const activeId = navMap[hash] || navMap[page] || 'dashboard';
-  ['dashboard','vendors','invoices','payments','report','analytics'].forEach(id => {
+  const activeId = navMap[hash] || hash.split('-')[0] || 'dashboard';
+  const targets = ['dashboard','vendors','invoices','payments','report', 'analytics', 'users'];
+  
+  targets.forEach(id => {
     const nav = document.getElementById('nav-' + id);
     const drw = document.getElementById('drawer-' + id);
     if (nav) {
-      if (id === activeId) nav.classList.add('active', 'bg-blue-600', 'text-white');
-      else nav.classList.remove('active', 'bg-blue-600', 'text-white');
+      if (id === activeId) nav.classList.add('active-link');
+      else nav.classList.remove('active-link');
     }
     if (drw) {
-      if (id === activeId) drw.classList.add('active', 'bg-blue-600', 'text-white');
-      else drw.classList.remove('active', 'bg-blue-600', 'text-white');
+      if (id === activeId) drw.classList.add('active-link');
+      else drw.classList.remove('active-link');
     }
   });
+
+  // Handle section visibility
+  const userSec = document.getElementById('nav-users-section');
+  const dUserSec = document.getElementById('drawer-users-section');
+  const showUsers = window.isAdmin();
+  if (userSec) userSec.style.display = showUsers ? 'block' : 'none';
+  if (dUserSec) dUserSec.style.display = showUsers ? 'block' : 'none';
 };
 
 
@@ -319,6 +403,8 @@ window.loadPage = function (page) {
 
   loadHTML('main-content', pageFile, function () {
     if (pageInit) pageInit();
+    // Proactively hide splash if this is the initial application boot
+    if (window.hideSplash) window.hideSplash();
   });
 };
 
@@ -407,6 +493,8 @@ window.applyRoleRestrictions = function() {
 function _populateLayoutUser() {
   const user = window.getSession();
   if (!user) return;
+  
+  // Header / Original layout
   const avatar  = document.getElementById('layout-avatar');
   const uname   = document.getElementById('layout-username');
   const rbadge  = document.getElementById('layout-role-badge');
@@ -416,6 +504,14 @@ function _populateLayoutUser() {
     rbadge.textContent  = user.role.toUpperCase();
     rbadge.style.background = user.role === 'admin' ? '#3f51b5' : '#7c3aed';
   }
+
+  // New Sidebar Footer
+  const sbAvatar = document.getElementById('sb-avatar');
+  const sbUname  = document.getElementById('sb-username');
+  const sbRole   = document.getElementById('sb-role');
+  if (sbAvatar) sbAvatar.textContent = user.name.charAt(0).toUpperCase();
+  if (sbUname)  sbUname.textContent  = user.name;
+  if (sbRole)   sbRole.textContent   = user.role === 'admin' ? 'Super User' : 'Staff Member';
 }
 
 
@@ -451,6 +547,22 @@ function _bootMainApp() {
       if (sidebarToggle) sidebarToggle.onclick = openDrawer;
       if (drawerClose)   drawerClose.onclick   = closeDrawer;
       if (mobileDrawer)  mobileDrawer.onclick  = (e) => { if (e.target === mobileDrawer) closeDrawer(); };
+
+      // Notification Toggles
+      const notifBtn = document.getElementById('notification-btn');
+      const notifPanel = document.getElementById('notification-panel');
+      if (notifBtn && notifPanel) {
+          notifBtn.onclick = (e) => {
+              e.stopPropagation();
+              const isShown = notifPanel.style.display === 'flex';
+              notifPanel.style.display = isShown ? 'none' : 'flex';
+          };
+          window.addEventListener('click', () => { notifPanel.style.display = 'none'; });
+          notifPanel.onclick = (e) => e.stopPropagation();
+      }
+
+      // Initial notification sync
+      window.updateNotifications();
 
       // Security Pass mapping for any asynchronous mutations
       const observer = new MutationObserver(() => {
@@ -492,7 +604,9 @@ document.addEventListener('DOMContentLoaded', function () {
   } else {
     console.log('[APP] No active session. Showing login page...');
     window._bootApp = _bootMainApp;
-    loadHTML('layout-root', 'pages/login.html', function () {});
+    loadHTML('layout-root', 'pages/login.html', function () {
+        setTimeout(window.hideSplash, 300);
+    });
   }
 });
 
@@ -628,176 +742,163 @@ function dashboardInit() {
   const invoices = window.invoiceList || [];
   const payments = window.paymentList || [];
   const vendors  = window.vendorList  || [];
-  let totalOutstanding = 0, totalPaid = 0, overdue = 0;
-  const today = new Date();
-  const elDate = document.getElementById('header-date');
-  if (elDate) {
-    elDate.textContent = window.formatDate(today);
-  }
+  const today    = new Date();
+
+  let totalInvoiced = 0, totalOutstanding = 0, totalPaid = 0, overdue = 0, critical = 0;
+  let settledCount = 0, totalLeadTime = 0;
+
   invoices.forEach(function (inv) {
-    // CORRECT: split-includes to handle multi-invoice payments
-    const paid = payments
-      .filter(p => p.vendor === inv.vendor &&
-        String(p.invoiceNumber || '').split(',').map(x => x.trim()).includes(String(inv.number)))
-      .reduce((s, p) => s + p.amount, 0);
-    const balance = inv.total - paid;
+    const invTotal = Number(inv.total) || 0;
+    totalInvoiced += invTotal;
+    const paid = window.getPaidAmountForInvoice(inv);
+    const balance = Math.max(0, invTotal - paid);
+    
     totalOutstanding += balance;
-    if (paid > 0) totalPaid += paid;
     const ageing = Math.floor((today - new Date(inv.date)) / 86400000);
-    if (balance > 0 && ageing > 30) overdue += balance;
+    
+    if (balance > 1) {
+      if (ageing > 30) overdue += balance;
+      if (ageing > 60) critical += balance;
+    } else {
+      settledCount++;
+      const refs = window.getPaymentRefsForInvoice(inv);
+      if (refs.length) {
+        const lastPayDate = new Date(Math.max(...refs.map(r => new Date(r.date))));
+        const diff = Math.floor((lastPayDate - new Date(inv.date)) / 86400000);
+        totalLeadTime += Math.max(0, diff);
+      }
+    }
   });
 
-  const elInv = document.getElementById('stat-invoices');
-  const elOut = document.getElementById('stat-outstanding');
-  const elPaid = document.getElementById('stat-paid');
-  const elOvr = document.getElementById('stat-overdue');
+  totalPaid = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  
+  const avgDays = settledCount > 0 ? Math.round(totalLeadTime / settledCount) : 0;
+  const unallocated = Object.values(window._excessPayments || {}).reduce((s, v) => s + v, 0);
+  const activeVendors = new Set(invoices.map(i => i.vendor)).size;
+  const payRatio = totalInvoiced > 0 ? Math.round(((totalInvoiced - totalOutstanding) / totalInvoiced) * 100) : 0;
 
-  if (elInv) elInv.textContent = invoices.length;
-  if (elOut) elOut.textContent = '₹' + totalOutstanding.toLocaleString();
-  if (elPaid) elPaid.textContent = '₹' + totalPaid.toLocaleString();
-  if (elOvr) elOvr.textContent = '₹' + overdue.toLocaleString();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('stat-invoices', window.formatCurrency(totalInvoiced, true));
+  set('stat-paid', window.formatCurrency(totalPaid, true));
+  set('stat-outstanding', window.formatCurrency(totalOutstanding, true));
+  set('stat-overdue', window.formatCurrency(critical, true));
+  set('feat-avg-days', avgDays + ' Days');
+  set('feat-vendors', activeVendors);
+  set('feat-unallocated', window.formatCurrency(unallocated, true));
+  set('feat-ratio', payRatio + '%');
+  set('header-invoices-val', invoices.length);
+  set('header-date', window.formatDate(today));
 
-  // Recent Activity
-  const activity = [];
-  invoices.slice(-5).forEach(inv => activity.push({
-    type: 'Invoice',
-    date: window.formatDate(inv.date),
-    desc: `Invoice <b>${inv.number}</b> for <b>${inv.vendor}</b> — ₹${inv.total.toLocaleString()}`
-  }));
-  payments.slice(-5).forEach(p => activity.push({
-    type: 'Payment',
-    date: window.formatDate(p.date),
-    desc: `Payment of ₹${p.amount.toLocaleString()} to <b>${p.vendor}</b> for <b>${p.invoiceNumber}</b>`
-  }));
-  activity.sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Recent Activity Feed
   const activityList = document.getElementById('dashboard-activity');
   if (activityList) {
-    activityList.innerHTML = activity.slice(0, 5).map(a => {
-      const isInv = a.type === 'Invoice';
-      return `<li class="py-3 flex items-start gap-3">
-        <div class="mt-1 p-1.5 rounded-lg ${isInv ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}">
-          <span class="material-icons text-sm">${isInv ? 'receipt' : 'payments'}</span>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-800">${a.desc}</p>
-          <p class="text-[11px] font-bold text-gray-400 mt-0.5">${a.date}</p>
-        </div>
-      </li>`;
-    }).join('') || '<li class="py-4 text-center text-gray-400 font-medium">No recent activity</li>';
+    const combined = [
+      ...invoices.map(i => ({ ...i, type: 'INV', sortDate: new Date(i.date) })),
+      ...payments.map(p => ({ ...p, type: 'PAY', sortDate: new Date(p.date) }))
+    ].sort((a, b) => b.sortDate - a.sortDate).slice(0, 10);
+
+    activityList.innerHTML = combined.map(item => {
+      const isInv = item.type === 'INV';
+      const icon = isInv ? 'receipt' : 'payments';
+      const color = isInv ? 'blue' : 'emerald';
+      return `
+        <li class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-${color}-50 text-${color}-600 flex items-center justify-center flex-shrink-0">
+            <span class="material-icons text-sm">${icon}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start">
+              <p class="text-xs font-black text-gray-800 truncate">${isInv ? 'Invoice' : 'Payment'} · ${item.vendor}</p>
+              <span class="text-[10px] font-black ${isInv ? 'text-gray-900' : 'text-emerald-600'} td-money">${window.formatCurrency(item.total || item.amount, true)}</span>
+            </div>
+            <p class="text-[9px] text-gray-400 font-semibold uppercase tracking-tight">${window.formatDate(item.date)} · ${item.number || item.invoiceNumber}</p>
+          </div>
+        </li>`;
+    }).join('') || '<li class="py-4 text-center text-gray-400">No activity found.</li>';
   }
 
-  // Top Vendors by outstanding
-  const vendorOutstanding = vendors.map(v => {
-    const totalInv = invoices.filter(inv => inv.vendor === v.name).reduce((s, inv) => s + inv.total, 0);
-    const totalPay = payments.filter(p => p.vendor === v.name).reduce((s, p) => s + p.amount, 0);
-    return { name: v.name, balance: totalInv - totalPay };
-  }).sort((a, b) => b.balance - a.balance);
+  // Top Vendors List
+  const topVendorsEl = document.getElementById('dashboard-top-vendors');
+  if (topVendorsEl) {
+     const vRisk = vendors.map(v => {
+        const ti = invoices.filter(i => i.vendor === v.name).reduce((s, i) => s + i.total, 0);
+        const tp = (window.paymentList || []).filter(p => p.vendor === v.name).reduce((s, p) => s + p.amount, 0);
+        const bal = Math.max(0, ti - tp);
+        return { name: v.name, balance: bal };
+     }).filter(v => v.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
 
-  const topVendors = vendorOutstanding.filter(v => v.balance > 0).slice(0, 5);
-  const vendorListEl = document.getElementById('dashboard-top-vendors');
-  if (vendorListEl) {
-    vendorListEl.innerHTML = topVendors.length
-      ? topVendors.map((v, i) =>
-        `<div class="flex justify-between items-end border-b border-gray-100 pb-3">
-            <div>
-              <p class="text-xs font-bold text-gray-800 mb-0.5">${v.name}</p>
-              <p class="text-[10px] text-gray-500">Outstanding</p>
-            </div>
-            <div class="text-right">
-              <p class="text-xs font-bold text-gray-800 mb-0.5">Rs ${v.balance.toLocaleString()}</p>
-              <p class="text-[10px] text-gray-500">Rank #${i + 1}</p>
-            </div>
-          </div>`
-      ).join('')
-      : '<li class="py-4 text-center text-gray-400 font-medium">No outstanding vendors</li>';
+     topVendorsEl.innerHTML = vRisk.map((v, i) => `
+        <li class="flex items-center justify-between p-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0 border border-indigo-100">${v.name.charAt(0)}</div>
+            <span class="text-xs font-bold text-gray-700 truncate font-sans uppercase tracking-tight">${v.name}</span>
+          </div>
+          <span class="text-[11px] font-black text-red-600 td-money">${window.formatCurrency(v.balance, true)}</span>
+        </li>
+      `).join('') || '<li class="py-2 text-center text-gray-400 text-xs">No outstanding vendors</li>';
   }
-
-  const topVEl = document.getElementById('header-top-vendor');
-  if (topVEl) topVEl.textContent = topVendors.length ? topVendors[0].name : '—';
-  
-  const hInv = document.getElementById('header-invoices-val');
-  if (hInv) hInv.textContent = invoices.length;
 
   // Overdue Hotlist (>30 days)
   const hotlistBody = document.getElementById('dashboard-hotlist-body');
   if (hotlistBody) {
     const hotlist = invoices.map(inv => {
-      const paid = payments
-        .filter(p => p.vendor === inv.vendor &&
-          String(p.invoiceNumber || '').split(',').map(x => x.trim()).includes(String(inv.number)))
-        .reduce((s, p) => s + p.amount, 0);
-      const balance = inv.total - paid;
+      const paid = window.getPaidAmountForInvoice(inv);
+      const balance = Math.max(0, inv.total - paid);
       const ageing = Math.floor((today - new Date(inv.date)) / 86400000);
       return { ...inv, balance, ageing };
-    }).filter(inv => inv.balance > 0 && inv.ageing > 30).sort((a,b) => b.ageing - a.ageing);
+    }).filter(inv => inv.balance > 1 && inv.ageing > 30).sort((a, b) => b.ageing - a.ageing);
     
-    const countBadge = document.getElementById('hotlist-count');
-    if (countBadge) countBadge.textContent = hotlist.length;
+    set('hotlist-count', hotlist.length);
 
-    if (hotlist.length === 0) {
-      hotlistBody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400 font-medium">No overdue invoices found.</td></tr>';
-      if (document.getElementById('hotlist-card-grid')) document.getElementById('hotlist-card-grid').innerHTML = '<div class="py-10 text-center text-gray-400 text-sm font-bold">No overdue invoices.</div>';
-    } else {
-      const displayList = hotlist.slice(0, 8);
-      hotlistBody.innerHTML = displayList.map(inv => {
-        const ageCls = inv.ageing > 60 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600';
-        const band   = inv.ageing > 60 ? '60+ Days' : '31–60 Days';
+    hotlistBody.innerHTML = hotlist.length ? hotlist.map(inv => {
+      const color = inv.ageing > 60 ? 'red' : 'orange';
+      const band  = inv.ageing > 60 ? '60+ Days' : '31–60 Days';
+      return `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-${color}-50 text-${color}-600 border border-${color}-100">${band}</span>
+          </td>
+          <td class="py-3 px-4 font-bold text-blue-600">${inv.number}</td>
+          <td class="py-3 px-4 font-semibold text-gray-500">${inv.vendor}</td>
+          <td class="py-3 px-4 text-right font-black text-gray-900 td-money">${window.formatCurrency(inv.balance)}</td>
+          <td class="py-3 px-4 text-center">
+             <button class="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded hover:bg-emerald-100 transition"
+                onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor.replace(/'/g, "\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='dashboard';window.location.hash='add-payment'">Record Pay</button>
+          </td>
+        </tr>`;
+    }).join('') : '<tr><td colspan="5" class="py-10 text-center text-gray-400">No critical overdue invoices. Well done!</td></tr>';
+
+    const cardGrid = document.getElementById('hotlist-card-grid');
+    if(cardGrid) {
+      cardGrid.innerHTML = hotlist.length ? hotlist.map(inv => {
+        const color = inv.ageing > 60 ? 'red' : 'orange';
         return `
-          <tr class="hover:bg-orange-50/20 transition-colors">
-            <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${ageCls}">${band}</span></td>
-            <td class="py-2.5 px-4 font-black text-blue-600">${inv.number}</td>
-            <td class="py-2.5 px-4 text-gray-700 font-semibold">${inv.vendor}</td>
-            <td class="py-2.5 px-4 font-black text-red-600 text-right">₹${inv.balance.toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-center">
-              <button class="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded hover:bg-emerald-100 transition"
-                onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor.replace(/'/g,"\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='dashboard';window.location.hash='add-payment'">Pay</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      
-      const cardGrid = document.getElementById('hotlist-card-grid');
-      if (cardGrid) {
-        cardGrid.innerHTML = displayList.map(inv => {
-          const c1 = inv.ageing > 60 ? '#ef4444' : '#f97316';
-          const ageCls = inv.ageing > 60 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600';
-          const band   = inv.ageing > 60 ? '60+ Days' : '31–60 Days';
-          return `
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative">
-            <div class="absolute top-0 left-0 bottom-0 w-[5px] rounded-l-2xl" style="background:${c1}"></div>
-            <div class="flex items-center gap-3 mb-4 ml-1">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0 shadow-sm" style="background:${c1}">!</div>
-              <div class="flex-1 min-w-0">
-                <p class="font-black text-gray-800 text-[15px] truncate leading-tight">${inv.vendor}</p>
-                <p class="text-[11px] text-gray-400 uppercase font-bold tracking-wider mt-0.5 truncate">${inv.number} â€¢ ${window.formatDate(inv.date)}</p>
-              </div>
-              <span class="text-[10px] font-black px-2.5 py-1 ${ageCls} rounded-lg shadow-sm border border-transparent whitespace-nowrap">${band}</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 mb-4 ml-1">
-              <div class="bg-red-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-red-50">
-                <p class="text-[9px] text-red-500 font-black uppercase tracking-widest mb-0.5">DUE</p>
-                <p class="text-[13px] font-black text-red-600">₹${inv.balance>=1000?(inv.balance/1000).toFixed(1)+'k':inv.balance}</p>
-              </div>
-              <div class="bg-orange-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-orange-50">
-                <p class="text-[9px] text-orange-600 font-black uppercase tracking-widest mb-0.5">AGEING</p>
-                <p class="text-[13px] font-black text-orange-700">${inv.ageing}d</p>
-              </div>
-            </div>
-            <div class="flex gap-2 w-full ml-1 pr-1">
-              <button onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor.replace(/'/g,"\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='dashboard';window.location.hash='add-payment'" class="flex-1 py-2.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 font-bold text-[12px] flex items-center justify-center shadow-sm transition-colors active:scale-95">Record Payment</button>
-            </div>
+          <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
+             <div class="absolute top-0 right-0 w-16 h-16 bg-${color}-50/50 rounded-bl-full -mr-4 -mt-4"></div>
+             <div class="flex justify-between items-start mb-2">
+                <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-${color}-50 text-${color}-600 border border-${color}-100">
+                   ${inv.ageing}D Overdue
+                </span>
+                <span class="text-xs font-black text-red-600 td-money">${window.formatCurrency(inv.balance, true)}</span>
+             </div>
+             <p class="text-[13px] font-black text-gray-800 leading-tight">${inv.vendor}</p>
+             <p class="text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">${inv.number} · ${window.formatDate(inv.date)}</p>
+             <button class="w-full py-2 bg-blue-50 text-[10px] font-black text-blue-600 uppercase tracking-widest rounded-lg border border-blue-100 hover:bg-blue-100 transition-all font-sans" 
+                onclick="window._editPaymentId=null;window._contextPaymentVendor='${inv.vendor.replace(/'/g, "\\'")}';window._lockPaymentVendor=true;window._paymentReturnPage='dashboard';window.location.hash='add-payment'">
+                Pay Now
+             </button>
           </div>`;
-        }).join('');
-      }
+      }).join('') : '<div class="col-span-full py-10 text-center text-gray-300 font-bold">Safe! No overdue items.</div>';
     }
   }
 
-  // Chart Rendering
-  const total = totalOutstanding + totalPaid;
+  // Monthly Charts Rendering
+  const totalLiab = totalOutstanding + totalPaid;
   const paymentRatioText = document.getElementById('payment-ratio-text');
   if (paymentRatioText) {
-    if (total === 0) paymentRatioText.textContent = "No data available";
-    else paymentRatioText.textContent = `${Math.round((totalPaid / total) * 100)}% of total invoiced amount has been paid.`;
+    paymentRatioText.textContent = totalLiab > 0 
+      ? `${Math.round((totalPaid / totalLiab) * 100)}% of total volume has been settled.`
+      : "No data available";
   }
 
   const ctxDonut = document.getElementById('donutChart');
@@ -810,96 +911,52 @@ function dashboardInit() {
         datasets: [{
           data: [totalOutstanding, totalPaid],
           backgroundColor: ['#f43f5e', '#10b981'],
-          borderWidth: 0,
-          hoverOffset: 4
+          borderWidth: 0, hoverOffset: 4
         }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '75%',
-        plugins: {
-          legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-        }
-      }
+      options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15 } } } }
     });
-  } else if (ctxDonut) {
-    document.getElementById('payment-ratio-text').innerHTML = "<span class='text-red-500'>Charting library failed to load. Please check your internet connection.</span>";
   }
 
   const ctxMonthly = document.getElementById('monthlyChart');
   if (ctxMonthly && typeof Chart !== 'undefined') {
-    // Generate simple last 6 months data aggregation based on real data
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const labels = [];
     const monthlyInv = [0, 0, 0, 0, 0, 0];
     const monthlyPay = [0, 0, 0, 0, 0, 0];
-    const labels = [];
-
-    // Setup last 6 months labels
     for (let i = 5; i >= 0; i--) {
-      let d = new Date(today);
-      d.setMonth(d.getMonth() - i);
+      let d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       labels.push(monthNames[d.getMonth()]);
     }
-
     invoices.forEach(inv => {
       let d = new Date(inv.date);
-      let m = d.getMonth();
-      let currentMonth = today.getMonth();
-      let diff = currentMonth - m;
-      // Adjust for year wrap-around
-      if (d.getFullYear() < today.getFullYear()) {
-        diff += 12 * (today.getFullYear() - d.getFullYear());
-      }
+      let diff = (today.getFullYear() - d.getFullYear()) * 12 + (today.getMonth() - d.getMonth());
       if (diff >= 0 && diff < 6) monthlyInv[5 - diff] += inv.total;
     });
-
-    payments.forEach(p => {
+    (window.paymentList || []).forEach(p => {
       let d = new Date(p.date);
-      let m = d.getMonth();
-      let currentMonth = today.getMonth();
-      let diff = currentMonth - m;
-      // Adjust for year wrap-around
-      if (d.getFullYear() < today.getFullYear()) {
-        diff += 12 * (today.getFullYear() - d.getFullYear());
-      }
+      let diff = (today.getFullYear() - d.getFullYear()) * 12 + (today.getMonth() - d.getMonth());
       if (diff >= 0 && diff < 6) monthlyPay[5 - diff] += p.amount;
     });
-
     if (window.monthlyChartInst) window.monthlyChartInst.destroy();
     window.monthlyChartInst = new Chart(ctxMonthly, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          {
-            label: 'Invoiced',
-            data: monthlyInv,
-            backgroundColor: '#6366f1',
-            borderRadius: 6
-          },
-          {
-            label: 'Paid',
-            data: monthlyPay,
-            backgroundColor: '#10b981',
-            borderRadius: 6
-          }
+          { label: 'Invoiced', data: monthlyInv, backgroundColor: '#6366f1', borderRadius: 4 },
+          { label: 'Paid', data: monthlyPay, backgroundColor: '#10b981', borderRadius: 4 }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true } }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: '#f3f4f6' }, border: { dash: [4, 4] } },
-          x: { grid: { display: false } }
-        }
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', align: 'end', labels: { usePointStyle: true } } },
+        scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
       }
     });
   }
 }
+
 
 // ============================================================
 //  VENDORS (Export logic only)
@@ -1294,7 +1351,7 @@ function vendorReportPageInit() {
 
   let invRows = paginatedInvs.map((inv, index) => {
     let i = startInv + index;
-    const rawPaid = window.getPaidAmountForInvoice(inv.number);
+    const rawPaid = window.getPaidAmountForInvoice(inv);
     const paidForInv = Math.min(inv.total, rawPaid);
     const balance = Math.max(0, inv.total - rawPaid);
     const ageing  = Math.floor((today - new Date(inv.date)) / 86400000);
@@ -1339,7 +1396,7 @@ function vendorReportPageInit() {
     // Render Card Grid
     if(document.getElementById('vr-invoices-card-grid')) {
       document.getElementById('vr-invoices-card-grid').innerHTML = paginatedInvs.map(inv => {
-        const rawPaid = window.getPaidAmountForInvoice(inv.number);
+        const rawPaid = window.getPaidAmountForInvoice(inv);
         const paidForInv = Math.min(inv.total, rawPaid);
         const balance = Math.max(0, inv.total - rawPaid);
         const st = balance <= 0 ? ['bg-emerald-50 text-emerald-700','Paid'] : paidForInv > 0 ? ['bg-amber-50 text-amber-700','Partial'] : ['bg-red-50 text-red-600','Pending'];
@@ -1652,7 +1709,7 @@ window.analyticsPageInit = function() {
   let settled=0, partial=0, pending=0;
 
   invoices.forEach(inv => {
-    const rp  = window.getPaidAmountForInvoice ? window.getPaidAmountForInvoice(inv.number) : 0;
+    const rp  = window.getPaidAmountForInvoice ? window.getPaidAmountForInvoice(inv) : 0;
     const paid= Math.min(inv.total, rp);
     const bal = Math.max(0, inv.total - rp);
     tInv += inv.total; tPaid += paid; tOut += bal;
@@ -1779,7 +1836,7 @@ window.analyticsPageInit = function() {
       const cols=['#6366f1','#10b981','#f97316','#ec4899','#8b5cf6'];
       const tv=vendors.map(v=>{
         const ti=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+i.total,0);
-        const tp=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+Math.min(i.total,(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i.number):0)),0);
+        const tp=invoices.filter(i=>i.vendor===v.name).reduce((s,i)=>s+Math.min(i.total,(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i):0)),0);
         return{name:v.name,total:ti,paid:tp,balance:Math.max(0,ti-tp)};
       }).filter(v=>v.total>0).sort((a,b)=>b.total-a.total).slice(0,5);
       tvEl.innerHTML=tv.length?tv.map((v,i)=>{const pct=Math.round((v.paid/v.total)*100);return`
@@ -1889,7 +1946,7 @@ window.analyticsPageInit = function() {
     invoices.forEach(inv=>{
       const cat=inv.category||'Uncategorized';
       if(!cats[cat]) cats[cat]={total:0,balance:0,count:0};
-      const bal=Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0));
+      const bal=Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv):0));
       cats[cat].total+=inv.total; cats[cat].balance+=bal; cats[cat].count++;
     });
     const catColors=['#6366f1','#10b981','#f97316','#ec4899','#8b5cf6','#eab308','#14b8a6','#ef4444'];
@@ -1916,7 +1973,7 @@ window.analyticsPageInit = function() {
     const critEl=document.getElementById('inv-critical-body');
     if(critEl){
       const crits=invoices.map(inv=>{
-        const rp=window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0;
+        const rp=window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv):0;
         const bal=Math.max(0,inv.total-rp);
         const age=Math.floor((today-new Date(inv.date))/86400000);
         return{...inv,balance:bal,ageing:age};
@@ -1943,13 +2000,13 @@ window.analyticsPageInit = function() {
       const tp=payments.filter(p=>p.vendor===v.name).reduce((s,p)=>s+p.amount,0);
       const cnt=invoices.filter(i=>i.vendor===v.name).length;
       const odInvs=invoices.filter(i=>i.vendor===v.name&&Math.floor((today-new Date(i.date))/86400000)>30);
-      const odBal=odInvs.reduce((s,i)=>s+Math.max(0,i.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i.number):0)),0);
+      const odBal=odInvs.reduce((s,i)=>s+Math.max(0,i.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(i):0)),0);
       return{name:v.name,invoiced:ti,paid:tp,balance:Math.max(0,ti-tp),count:cnt,odBal,pct:ti>0?Math.round((Math.max(0,ti-tp)/ti)*100):0};
     }).filter(v=>v.balance>0).sort((a,b)=>b.balance-a.balance);
 
     const atRisk=vRisk.filter(v=>v.odBal>0).length;
     const topPct=vRisk[0]?.pct||0;
-    const odCnt=invoices.filter(inv=>Math.floor((today-new Date(inv.date))/86400000)>30&&Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv.number):0))>0).length;
+    const odCnt=invoices.filter(inv=>Math.floor((today-new Date(inv.date))/86400000)>30&&Math.max(0,inv.total-(window.getPaidAmountForInvoice?window.getPaidAmountForInvoice(inv):0))>0).length;
     set('rk-critical-val',fmt(tOvr)); set('rk-at-risk',atRisk);
     set('rk-top-pct',topPct+'%'); set('rk-overdue-cnt',odCnt);
 

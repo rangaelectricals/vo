@@ -160,7 +160,7 @@
   }
 
   function getPaid(inv) {
-    if (window.getPaidAmountForInvoice) return window.getPaidAmountForInvoice(inv.number);
+    if (window.getPaidAmountForInvoice) return window.getPaidAmountForInvoice(inv);
     return 0;
   }
 
@@ -226,10 +226,10 @@
       return s+(b>0&&a>60?b:0);
     },0);
     
-    document.getElementById('global-total').textContent         = '₹ '+gt.toLocaleString();
-    document.getElementById('global-paid').textContent          = '₹ '+gp.toLocaleString();
-    document.getElementById('global-outstanding').textContent   = '₹ '+go.toLocaleString();
-    document.getElementById('global-overdue').textContent       = '₹ '+gover.toLocaleString();
+    document.getElementById('global-total').textContent         = window.formatCurrency(gt, true);
+    document.getElementById('global-paid').textContent          = window.formatCurrency(gp, true);
+    document.getElementById('global-outstanding').textContent   = window.formatCurrency(go, true);
+    document.getElementById('global-overdue').textContent       = window.formatCurrency(gover, true);
 
     // Filtered totals for footer
     const ft=list.reduce((s,r)=>s+r.total,0);
@@ -268,9 +268,9 @@
     window.goToRptPage = function(p) { window.rptCurrentPage = p; renderRpt(); };
     
     document.getElementById('rpt-table-footer').textContent  = `${totalItems} vendor${totalItems!==1?'s':''} shown`;
-    document.getElementById('rpt-foot-total').textContent    = '₹'+ft.toLocaleString();
-    document.getElementById('rpt-foot-paid').textContent     = '₹'+fp.toLocaleString();
-    document.getElementById('rpt-foot-balance').textContent  = '₹'+fb.toLocaleString();
+    document.getElementById('rpt-foot-total').textContent    = window.formatCurrency(ft);
+    document.getElementById('rpt-foot-paid').textContent     = window.formatCurrency(fp);
+    document.getElementById('rpt-foot-balance').textContent  = window.formatCurrency(fb);
 
     const startIndex = window.rptRowsPerPage === -1 ? 0 : (window.rptCurrentPage - 1) * window.rptRowsPerPage;
     const paginatedGroups = window.rptRowsPerPage === -1 ? groupedData : groupedData.slice(startIndex, startIndex + window.rptRowsPerPage);
@@ -322,11 +322,11 @@
              </div>
            </td>
            <td colspan="4" class="py-4 px-4 hidden xl:table-cell text-center"></td>
-           <td class="py-4 px-4 text-right text-[13px] text-gray-800 font-black">₹${grp.total.toLocaleString()}</td>
-           <td class="py-4 px-4 text-right text-[13px] text-emerald-700 font-black">₹${grp.paid.toLocaleString()}</td>
+           <td class="py-4 px-4 text-right text-[13px] text-gray-800 font-black td-money">${window.formatCurrency(grp.total)}</td>
+           <td class="py-4 px-4 text-right text-[13px] text-emerald-700 font-black td-money">${window.formatCurrency(grp.paid)}</td>
            <td class="py-4 px-4 text-right">
-             <div class="text-[13px] ${grp.balance>0?'text-red-700':'text-gray-500'} font-black">₹${grp.balance.toLocaleString()}</div>
-             ${grp.excess > 0 ? `<div class="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded shadow-sm border border-amber-100 ml-auto w-max mt-1">Cr: ₹${grp.excess.toLocaleString()}</div>` : ''}
+             <div class="text-[13px] ${grp.balance>0?'text-red-700':'text-gray-500'} font-black td-money">${window.formatCurrency(grp.balance)}</div>
+             ${grp.excess > 0 ? `<div class="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded shadow-sm border border-amber-100 ml-auto w-max mt-1">Cr: ${window.formatCurrency(grp.excess, true)}</div>` : ''}
            </td>
            <td colspan="1" class="py-4 px-4 text-center"><span class="text-[10px] uppercase font-black px-2 py-1 rounded shadow-sm ${vSt==='paid'?'bg-emerald-200 text-emerald-800 border border-emerald-300':vSt==='partial'?'bg-amber-200 text-amber-800 border border-amber-300':'bg-red-200 text-red-800 border border-red-300'}">${vSt}</span></td>
            <td colspan="3" class="py-4 px-4 text-center" onclick="event.stopPropagation()">
@@ -348,13 +348,13 @@
             </td>
             <td class="py-2.5 px-4 text-[11px] italic text-gray-400 hidden xl:table-cell">↳ Linked to ${grp.vendor.slice(0,10)}...</td>
             <td class="py-2.5 px-4 font-bold text-blue-600 text-[12px]">${r.number}</td>
-            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.basic||0).toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.gst||0).toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.discount||0).toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell">₹${(r.roundoff||0).toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right font-black text-gray-800 bg-blue-50/10">₹${r.total.toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">₹${r.paid.toLocaleString()}</td>
-            <td class="py-2.5 px-4 text-right font-black ${r.balance>0?'text-red-500 bg-red-50/10':'text-gray-400'}">₹${r.balance.toLocaleString()}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell td-money">${window.formatCurrency(r.basic)}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell td-money">${window.formatCurrency(r.gst)}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell td-money">${window.formatCurrency(r.discount)}</td>
+            <td class="py-2.5 px-4 text-right text-[11px] text-gray-500 hidden xl:table-cell td-money">${window.formatCurrency(r.roundoff)}</td>
+            <td class="py-2.5 px-4 text-right font-black text-gray-800 bg-blue-50/10 td-money">${window.formatCurrency(r.total)}</td>
+            <td class="py-2.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10 td-money">${window.formatCurrency(r.paid)}</td>
+            <td class="py-2.5 px-4 text-right font-black ${r.balance>0?'text-red-500 bg-red-50/10':'text-gray-400'} td-money">${window.formatCurrency(r.balance)}</td>
             <td class="py-2.5 px-4 text-center">
               ${r.balance <= 0 ? '<span class="text-gray-400 font-bold">—</span>' : `<span class="text-[10px] font-black px-2 py-1 rounded-lg ${ageCls}">${r.ageing}d</span>`}
             </td>

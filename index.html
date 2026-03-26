@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vendor Outstanding Management</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
@@ -31,6 +32,27 @@
 </head>
 
 <body data-theme="corporate" class="bg-[#f3f4f6] min-h-screen text-slate-800">
+  <!-- Initial App Splash -->
+  <div id="app-splash"
+    class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#070b14] transition-opacity duration-700">
+    <div class="relative">
+      <div
+        class="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 p-5 animate-pulse flex items-center justify-center overflow-hidden">
+        <img src="logo.png" alt="Loading..." class="w-full h-full object-contain opacity-80" />
+      </div>
+      <div class="absolute -inset-4 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+    </div>
+    <div class="mt-8 text-center">
+      <h2 class="text-white font-black text-sm uppercase tracking-[0.4em] opacity-40 animate-pulse">Initializing System
+      </h2>
+      <div class="flex gap-1 justify-center mt-3">
+        <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+        <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+        <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="layout-root">
     <!-- Layout and pages will be loaded here by app.js -->
   </div>

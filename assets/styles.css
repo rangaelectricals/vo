@@ -306,7 +306,202 @@ input:focus, select:focus, textarea:focus {
 	font-size: 0.85em;
 	font-weight: 500;
 }
+
 .divide-y > :not([hidden]) ~ :not([hidden]) {
 	border-top-width: 1px;
 	border-color: #e5e7eb;
+}
+
+/* ── Smart Money Display ────────────────────────────────────── */
+.money, .td-money {
+	white-space: nowrap;
+	font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Prevent layout shift on large numbers in KPI cards */
+.kpi-val, .anlyt-kpi-val {
+	max-width: 100%;
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Handle mobile table overflows gracefully */
+.overflow-x-auto {
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+}
+
+@media (max-width: 640px) {
+	.kpi-val, .anlyt-kpi-val {
+		font-size: 1.25rem !important; /* Force shrink on mobile if too long */
+	}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ── Sidebar Design & Patterns ──
+   ───────────────────────────────────────────────────────────── */
+.sidebar-pattern {
+	background-color: #0f172a; /* Unified Slate Dark */
+	background-image: radial-gradient(at 0% 0%, rgba(67, 56, 202, 0.2) 0px, transparent 50%),
+					  radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
+	position: relative;
+	overflow: hidden;
+}
+
+.sidebar-pattern::after {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0.1;
+    /* Clean Drawing/Blueprint Grid Pattern */
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+}
+
+.nav-link {
+	position: relative;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border-radius: 12px !important;
+	margin-bottom: 2px;
+	border: 1px solid transparent;
+}
+
+.header-dark {
+    background: #0f172a !important; /* Unified Slate Dark */
+    background-image: radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%) !important;
+    border-bottom: 2px solid rgba(79, 70, 229, 0.2) !important;
+    backdrop-filter: blur(8px);
+}
+.header-dark #header-page-title { color: #fff !important; }
+.header-dark #sidebar-toggle, .header-dark button[aria-label="Toggle Menu"] { 
+    color: rgba(255,255,255,0.6) !important;
+}
+.header-dark #sidebar-toggle:hover, .header-dark button[aria-label="Toggle Menu"]:hover {
+    background: rgba(255,255,255,0.05) !important;
+    color: #fff !important;
+}
+.header-dark #layout-username { color: rgba(255,255,255,0.9) !important; }
+.header-dark #notification-btn { color: rgba(255,255,255,0.6) !important; }
+.header-dark #notification-btn:hover { background: rgba(255,255,255,0.05) !important; color: #fff !important; }
+
+.nav-link:hover {
+	background: rgba(255, 255, 255, 0.08) !important;
+	color: #fff !important;
+	transform: translateX(4px);
+}
+
+.nav-link.active-link {
+	background: linear-gradient(135deg, rgba(67, 56, 202, 0.3) 0%, rgba(37, 99, 235, 0.1) 100%) !important;
+	border: 1px solid rgba(67, 56, 202, 0.4);
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-link.active-link::before {
+	content: "";
+	position: absolute;
+	left: -12px;
+	top: 20%;
+	bottom: 20%;
+	width: 5px;
+	background: #4338ca;
+	border-radius: 0 4px 4px 0;
+	box-shadow: 2px 0 12px rgba(67, 56, 202, 0.8);
+}
+
+.sidebar-divider {
+	height: 1px;
+	background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
+	margin: 1.25rem 0;
+}
+
+.sidebar-glass-footer {
+	background: rgba(255, 255, 255, 0.03);
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+	animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ── Notifications System ──
+   ───────────────────────────────────────────────────────────── */
+.notification-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.notification-panel {
+    position: absolute;
+    top: 60px;
+    right: 1.5rem;
+    width: 320px;
+    max-height: 480px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 60;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    animation: dropdownFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.notification-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fdf2f2;
+}
+
+.notification-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.notification-item {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+}
+
+.notification-item.urgent {
+    border-left: 3px solid #ef4444;
 }

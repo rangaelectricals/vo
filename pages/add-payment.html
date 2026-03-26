@@ -420,14 +420,14 @@
     const invs = (window.invoiceList || []).filter(i => i.vendor === vendor);
 
     invs.forEach(inv => {
-      let rawPaid = window.getPaidAmountForInvoice(inv.number);
+      let rawPaid = window.getPaidAmountForInvoice(inv);
       if (editingId) {
         // Exclude the currently editing payment from the pre-allocated sum so it can be re-allocated correctly in the UI builder.
         const editingPayment = payments.find(p => p.id === editingId);
         if (editingPayment && String(editingPayment.invoiceNumber||'').includes(inv.number)) {
           // Approximate the deduction if they were editing a multi-invoice payment (rare, but mathematically robust)
           // For simplicity in edit view, we'll just subtract the editingPayment's total amount from the global ledger sum.
-          const allocRef = window.getPaymentRefsForInvoice(inv.number).find(r => r.id === editingId);
+          const allocRef = window.getPaymentRefsForInvoice(inv).find(r => r.id === editingId);
           if (allocRef) rawPaid -= allocRef.allocated;
         }
       }
